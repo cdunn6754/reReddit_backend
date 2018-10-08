@@ -25,6 +25,7 @@ def api_root(request, format=None):
     return Response({
     'users': reverse('user-list', request=request, format=format),
     'subs': reverse('sub-list', request=request, format=format),
+    'posts': reverse('post-list', request=request, format=format),
     })
 
 urlpatterns = [
@@ -32,4 +33,5 @@ urlpatterns = [
     path('', api_root),
     path('users/', include('redditors.urls')),
     path('subreddits/', include('subs.urls')),
+    path('posts/', include('posts.urls')),
 ]

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     
     'subs',
     'redditors',
+    'posts',
 ]
 
 MIDDLEWARE = [

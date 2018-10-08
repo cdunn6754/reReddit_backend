@@ -10,11 +10,11 @@ from rest_framework.permissions import (
 from .models import User
 from .serializers import UserSerializer
 
-class UserList(generics.ListAPIView):
+class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-class UserDetail(generics.RetrieveAPIView):
+class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
