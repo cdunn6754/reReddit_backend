@@ -11,6 +11,13 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
         queryset=User.objects.all()
     )
     
+    members = serializers.HyperlinkedRelatedField(
+        many=True,
+        view_name='user-detail',
+        queryset=User.objects.all()
+    )
+    
     class Meta:
         model = Sub
-        fields = ('url', 'id', 'created', 'title', 'description', 'moderators')
+        fields = ('url', 'id', 'created', 'title', 'description',
+            'moderators', 'members')

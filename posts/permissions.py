@@ -8,4 +8,9 @@ class IsPosterOrReadOnly(permissions.BasePermission):
         return request.user == obj.poster
     
 # class IsMemberOfSub(permissions.BasePermission):
-#     def
+#     """
+#     This is to be sure that the user creating the post
+#     is a member of the sub that contains the incipeint post
+#     """
+#     def has_permission(self, request, view):
+#         if request.sub in requests.user.subs
