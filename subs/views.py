@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, renderers
+from rest_framework import permissions
 
 from .models import Sub
 from .serializers import SubSerializer
@@ -9,6 +10,9 @@ class SubList(generics.ListCreateAPIView):
     serializer_class=SubSerializer
     
     
-class SubDetail(generics.RetrieveAPIView):
+    
+class SubDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=Sub.objects.all()
-    serializer_class=SubSerializer    
+    serializer_class=SubSerializer
+    
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
