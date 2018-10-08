@@ -5,7 +5,7 @@ from redditors.models import User
 
 class SubSerializer(serializers.HyperlinkedModelSerializer):
     
-    admins = serializers.HyperlinkedRelatedField(
+    moderators = serializers.HyperlinkedRelatedField(
         many=True,
         view_name='user-detail',
         queryset=User.objects.all()
@@ -13,4 +13,4 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = Sub
-        fields = ('url', 'id', 'created', 'title', 'description', 'admins')
+        fields = ('url', 'id', 'created', 'title', 'description', 'moderators')

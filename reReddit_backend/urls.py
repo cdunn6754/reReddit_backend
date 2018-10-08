@@ -32,5 +32,4 @@ urlpatterns = [
     path('', api_root),
     path('users/', include('redditors.urls')),
     path('subreddits/', include('subs.urls')),
-    path('api_auth/', include('rest_framework.urls'))
 ]
