@@ -1,7 +1,7 @@
 from rest_framework import generics
-from rest_framework import permissions as drf_permissions
+from rest_framework.permissions import AllowAny
 
-from . import permissions
+from .permissions import IsModeratorOrReadOnly
 from .models import Sub
 from .serializers import SubSerializer
 
@@ -16,4 +16,4 @@ class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset=Sub.objects.all()
     serializer_class=SubSerializer
     
-    permission_classes = (permissions.IsModeratorOrReadOnly,)
+    permission_classes = (AllowAny,)
