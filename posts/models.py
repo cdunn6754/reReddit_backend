@@ -12,5 +12,5 @@ class Post(models.Model):
     body = models.TextField()
     upvotes = models.IntegerField(default=0)
     
-    sub = models.OneToOneField(Sub, on_delete=models.CASCADE)
-    poster = models.OneToOneField(User, on_delete=models.CASCADE)
+    sub = models.ForeignKey(Sub, on_delete=models.CASCADE)
+    poster = models.ForeignKey(User, on_delete=models.CASCADE)

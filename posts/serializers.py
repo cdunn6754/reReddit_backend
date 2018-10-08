@@ -8,7 +8,8 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     
     poster = serializers.HyperlinkedRelatedField(
         view_name='user-detail',
-        queryset=User.objects.all()
+        #queryset=User.objects.all(),
+        read_only=True
     )
     
     sub = serializers.HyperlinkedRelatedField(
@@ -19,4 +20,4 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Post
         fields = ('url', 'id', 'created', 'updated', 'title', 'body',
-                    'upvotes', 'poster', 'sub',)
+                    'upvotes', 'sub', 'poster',)
