@@ -7,8 +7,8 @@ class Sub(models.Model):
     title = models.CharField(max_length=150)
     description = models.CharField(max_length=500, blank=True)
     
-    members = models.ManyToManyField(User)
-    moderators = models.ManyToManyField(User, related_name='moderated_sub')
+    members = models.ManyToManyField(User, related_name='subs')
+    moderators = models.ManyToManyField(User, related_name='moderated_subs')
     
     def __str__(self):
         return "subReddit: {}".format(self.title)
