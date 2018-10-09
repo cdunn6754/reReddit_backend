@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models.signals import post_save
 from django.core.exceptions import  ValidationError
+from django.dispatch import receiver
 
 
 from redditors.models import User
@@ -15,23 +17,6 @@ class Sub(models.Model):
     
     def __str__(self):
         return "subReddit: {}".format(self.title)
-    
-    
-    def makeModeratorsMembers(self):
-        moderators = self.moderators.all()
-        for moderator in moderators:
-            if not moderator in self.members.all():
-                self.members.add(moderator)                                
-    
-    def save(self, *args, **kwargs):
-        """
-        Make the moderators members if they aren't already
-        Also be sure that there is at least one moderator
-        """                
-        super().save(*args,**kwargs)            
-        self.makeModeratorsMembers()                
-        super().save(*args,**kwargs)
-        
-        
+
         
     

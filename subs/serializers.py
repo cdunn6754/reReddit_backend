@@ -23,6 +23,18 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'created', 'title', 'description',
             'moderators', 'members')
             
+    def to_internal_value(self, data):
+        """
+        Ensures that a moderator also becomes a member
+        """
+        incoming = super().to_internal_value(data)
+        moderators = incoming['moderators']
+        members = incoming['members']
+        for moderator in moderators:
+            if not moderator in members:
+                members.append(moderator)
+        return incoming
+            
             
     def validate_moderators(self, moderators):
         """
@@ -33,3 +45,5 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
                     _("At least one moderator must be set")
             )
         return moderators
+    
+    
