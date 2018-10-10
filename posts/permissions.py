@@ -27,7 +27,6 @@ class IsMemberOfSubOrReadOnly(permissions.BasePermission):
     """
     message = "You must be a member of this subReddit to create a post here."
     def has_permission(self, request, view):
-        
         if request.method in permissions.SAFE_METHODS:
             return True
         elif request.data:
@@ -35,9 +34,7 @@ class IsMemberOfSubOrReadOnly(permissions.BasePermission):
             post_sub_pk = get_pk_from_link(request.data['sub'])
             user = request.user
             user_sub_pks = [sub.pk for sub in user.subs.all()]
-            print(post_sub_pk)
-            print(user_sub_pks)
-            if not post_sub_pk in user_sub_pks:
+            if not (post_sub_pk in user_sub_pks):
                 return False
                     
         return True
@@ -47,5 +44,5 @@ def get_pk_from_link(url):
     Cut out and return the pk at the end of 
     a hyperlink url from a hyperlinkedrelated field
     """
-    return re.search('[^/]+(?=/$|$)', url).group(0)
+    return int(re.search('[^/]+(?=/$|$)', url).group(0))
         
