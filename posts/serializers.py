@@ -20,4 +20,13 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Post
         fields = ('url', 'id', 'created', 'updated', 'title', 'body',
-                    'upvotes', 'sub', 'poster',)
+                    'upvotes', 'sub', 'poster')
+                    
+                    
+    def validate(self, data):
+        """
+        Ensure that the use is a member of the sub
+        being posted to
+        """
+        
+        return data

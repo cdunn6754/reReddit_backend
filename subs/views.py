@@ -11,9 +11,8 @@ class SubListView(generics.ListCreateAPIView):
     serializer_class=SubSerializer
     
     
-    
 class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset=Sub.objects.all()
     serializer_class=SubSerializer
     
-    permission_classes = (AllowAny,)
+    permission_classes = (IsModeratorOrReadOnly,)
