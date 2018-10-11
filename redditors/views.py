@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, renderers, status
-from rest_framework import views as drf_views
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import (
     AllowAny,
@@ -8,7 +8,7 @@ from rest_framework.permissions import (
 )
 
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, CreateUserSerializer
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
@@ -18,7 +18,11 @@ class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-class UserLogoutView(drf_views.APIView):
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = CreateUserSerializer    
+    
+class UserLogoutView(APIView):
         permission_classes = [IsAuthenticated]
 
         def post(self, request, *args, **kwargs):
@@ -28,7 +32,7 @@ class UserLogoutView(drf_views.APIView):
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             
-class UserLoginView(drf_views.APIView):
+class UserLoginView(APIView):
         permission_classes = [AllowAny]
 
         def post(self, request, *args, **kwargs):

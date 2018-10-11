@@ -4,9 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from subs.models import Sub
 
 class User(AbstractUser):
-    karma = models.IntegerField(default=0)    
+    karma = models.IntegerField(default=0)
     subs = models.ManyToManyField(
-        Sub, through='UserSubMembership', 
+        Sub, through='UserSubMembership',
         related_name='members')
         
         
