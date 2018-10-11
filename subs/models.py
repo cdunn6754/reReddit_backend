@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 class Sub(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=150, unique=True)
     description = models.CharField(max_length=500, blank=True)
     
     moderators = models.ManyToManyField(
