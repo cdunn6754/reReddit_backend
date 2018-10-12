@@ -27,8 +27,10 @@ class IsMemberOfSubOrReadOnly(permissions.BasePermission):
     """
     message = "You must be a member of this subReddit to create a post here."
     def has_permission(self, request, view):
+        
         if request.method in permissions.SAFE_METHODS:
             return True
+        
         elif request.data:
             # prevent creation unless user is member of the sub
             post_sub_pk = get_pk_from_link(request.data['sub'])
