@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.validators  import UniqueValidator
 
-from .models import User
+from .models import User, UserSubMembership
+from subs.models import Sub
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     
@@ -48,9 +49,16 @@ class CreateUserSerializer(serializers.ModelSerializer):
             )]
     )
     
+    subs = serializers.HyperlinkedRelatedField(
+        required=False,
+        many=True,
+        queryset = Sub.objects.all(),
+        view_name="sub-detail"
+    )
+    
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', 'subs']
         
     def create(self, validated_data):
         user = User(
@@ -59,6 +67,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        
+        for sub in validated_data['subs']:
+            UserSubMembership.objects.create(
+                user=user,
+                sub=sub,
+            )
+        
         return user
     
     
