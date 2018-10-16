@@ -22,6 +22,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('url', 'id', 'karma', 'username', 'subs', 'moderated_subs',)
+        extra_kwargs = {
+            'url': {'lookup_field': 'username'}
+        }
         
 class CreateUserSerializer(serializers.ModelSerializer):
     

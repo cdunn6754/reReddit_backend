@@ -9,7 +9,8 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     poster = serializers.HyperlinkedRelatedField(
         view_name='user-detail',
         #queryset=User.objects.all(),
-        read_only=True
+        read_only=True,
+        lookup_field='username'
     )
     
     sub = serializers.HyperlinkedRelatedField(

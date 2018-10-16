@@ -10,7 +10,7 @@ class PostListView(generics.ListCreateAPIView):
     queryset=Post.objects.all()
     serializer_class=PostSerializer
     
-    permission_classes = (IsAuthenticatedOrReadOnly)  #IsMemberOfSubOrReadOnly
+    permission_classes = (IsAuthenticatedOrReadOnly,)  #IsMemberOfSubOrReadOnly
     
     def perform_create(self, serializer):
         serializer.save(poster=self.request.user)  

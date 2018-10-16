@@ -6,7 +6,7 @@ from . import views
 
 urlpatterns = [
     path('', views.UserListView.as_view(), name='user-list'),
-    re_path('(?P<pk>[0-9]+)/', views.UserDetailView.as_view(), name='user-detail'),
+    path('<slug:username>/', views.UserDetailView.as_view(), name='user-detail'),
     path('login/', drf_views.obtain_auth_token),
     path('logout/', views.UserLogoutView.as_view()),
     path('create/', views.CreateUserView.as_view()),
