@@ -13,10 +13,11 @@ class IsPosterOrModOrAdminOrReadOnly(permissions.BasePermission):
         
         user = request.user
         post_sub_moderators = obj.sub.moderators.all()
+
+        is_poster = True if user == obj.poster else False        
+        mod = True if user in post_sub_moderators else False
+        admin = True if user.is_staff else False
         
-        mod = (True if user in post_sub_moderators else False)
-        admin = (True if user.is_staff else False)
         
-        
-        return (request.user == obj.poster) or admin or mod
+        return is_poster or admin or mod
         
