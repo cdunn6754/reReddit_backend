@@ -32,16 +32,6 @@ class UserLogoutView(APIView):
                 return Response(status=status.HTTP_200_OK)
             except:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            
-class UserLoginView(APIView):
-        permission_classes = [AllowAny]
-
-        def post(self, request, *args, **kwargs):
-            try:
-                request.user.auth_token.delete()
-                return Response(status=status.HTTP_200_OK)
-            except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
     
 
 

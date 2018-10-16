@@ -7,8 +7,10 @@ from subs.models import Sub
 class User(AbstractUser):
     karma = models.IntegerField(default=0)
     subs = models.ManyToManyField(
-        Sub, through='UserSubMembership',
-        related_name='members')
+        Sub,
+        through='UserSubMembership',
+        related_name='members'
+    )
         
         
 class UserSubMembership(models.Model):
