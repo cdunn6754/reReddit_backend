@@ -11,8 +11,8 @@ class User(AbstractUser):
         through='UserSubMembership',
         related_name='members'
     )
-        
-        
+    #moderated_subs ManyToManyField, related_name="moderated_subs"
+
 class UserSubMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sub = models.ForeignKey(Sub, on_delete=models.CASCADE)
