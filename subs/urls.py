@@ -5,7 +5,7 @@ from . import views
 
 urlpatterns = [
     path('', views.SubListView.as_view(), name='sub-list'),
-    re_path('(?P<pk>[0-9]+)/', views.SubDetailView.as_view(), name='sub-detail'),
+    path('sub/<slug:title>/', views.SubDetailView.as_view(), name='sub-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

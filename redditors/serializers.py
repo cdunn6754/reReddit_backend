@@ -10,13 +10,15 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     subs = serializers.HyperlinkedRelatedField(
         many=True,
         view_name='sub-detail',
-        read_only=True
+        read_only=True,
+        lookup_field='title'
     )
     
     moderated_subs = serializers.HyperlinkedRelatedField(
         many=True,
         view_name='sub-detail',
-        read_only=True
+        read_only=True,
+        lookup_field='title'
     )
     
     class Meta:

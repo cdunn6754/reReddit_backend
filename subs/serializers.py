@@ -24,6 +24,6 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
         model = Sub
         fields = ('url', 'id', 'created', 'title', 'description',
                   'moderators', 'members')
-        # extra_kwargs = {
-        #     'members': {'lookup_field': 'username'}
-        # }
+        extra_kwargs = {
+            'url': {'lookup_field': 'title'}
+        }
