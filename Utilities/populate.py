@@ -102,13 +102,13 @@ class Populate:
         (i.e. subscriptions) for each sub. 
         """
         
-        # Normal distribution random number of members to add
-        to_add = np.random.normal(n_mems, n_mems/3, len(self.subs)).as_type(int)        
-        
-        for idx,sub in enumerate(self.subs):
-            users = random.sample(self.users, to_add[idx])
-            for user in users:
-                pass
+        # # Normal distribution random number of members to add
+        # to_add = np.random.normal(n_mems, n_mems/3, len(self.subs)).astype(int)        
+        # 
+        # for idx,sub in enumerate(self.subs):
+        #     users = random.sample(self.users, to_add[idx])
+        #     for user in users:
+        #         pass
         
         
 
