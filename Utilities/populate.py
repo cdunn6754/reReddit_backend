@@ -7,7 +7,14 @@ import json
 import random
 
 from constants import (API_SUB_URL, API_USER_CREATE_URL, API_USER_LOGIN_URL,
-                       API_USER_URL, API_SUB_SUBSCRIBE_URL_,)
+                       API_USER_URL, API_SUB_SUBSCRIBE_URL_)
+
+"""
+TODO: Break this monster into smaller classes. I think one logical
+route could be to make a base class that reads things from the database, i.e.
+posts, subs and users. Then a subclass could handle the addition of new
+instances when needed.
+"""
 
 class Populate:
     def __init__(self):
@@ -24,14 +31,18 @@ class Populate:
         # Faker instance for names, post text, ...
         self.fake = Faker()
         
-        # List of users created, list contains tuple of (username, token)
+        # List of users created, list contains dict of (username, token)
         self.users = []
         # List of subs created, list of sub titles
         self.subs = []
+        # # List of posts created, list of 3-tuples
+        # # (post-title, subreddit title, poster username)
+        # self.posts = []
         
         # Get the users and subs currently in the database
         self.get_users()
         self.get_subs()
+        #self.get_posts()
         
     def get_users(self):
         """
@@ -70,7 +81,21 @@ class Populate:
             self.subs.append(title)
         print("{} subreddits read from database"
               " successfully".format(len(self.users)))
-                  
+              
+    # def get_posts(self):
+    #     """
+    #     Read the posts that are currently in the database and
+    #     store them in the self.posts list
+    #     """
+    #     print("\nReading posts currently in database")
+    #     print("---------------------------------------")
+    #
+    #     res = requests.get(API_POST_URL)
+    #     for post in res.json():
+    #         title = post['title']
+    #         sub = post.sub.title
+    #         username = post.
+    #
     def populate(self):
         """
         Call the various population functions that make api calls
@@ -171,8 +196,52 @@ class Populate:
                     
                 new_memberships += 1
         print("{} users memberships created".format(new_memberships))
+        
+    def add_posts(self, n_per_user=20):
+        """
+        Add fake posts in subreddits. n_per_user is the mean of a normal
+        distribution, so the number of posts actually added by each
+        user is random. Those are added to random subreddits
+        """
+        print("\nPosting to subreddits")
+        print("------------------------")
+        
+        n_posts_added = 0
+                
+        # for each user get random number of posts to add
+        n_to_add = np.random.normal(n_per_user, n_per_user/3,
+                                    len(self.users)).astype(int)
+        
+        for idx,user_data in enumerate(self.users):
+            # Log in user to get the list of subreddits to which they subscribe
+            username = user_data[0]
+            login_data = {'username': username,
+                          'password': self.password}
+            res = requests.post(API_USER_LOGIN_URL, json = login_data)
+            # this will be a list of dicts with subreddit info
+            member_subs = res.json()['subs']
+            # random sub for each post by this user
+            subs = np.random.choice(member_subs, max(n_to_add[idx],0))
+            for sub_dict in subs:
+                post_title = self.fake.sentence(nb_words=4,
+                                               variable_nb_words=True)
+                post_body = self.fake.text(max_nb_chars=150)
+                header = {'Authorization': 'Token {}'.format(user_data[1])}
+                data = {'title': post_title,
+                        'body': post_body}
+                try:
+                    res = requests.post(sub_dict['url'] + 'post/',
+                                  headers=header,
+                                  json=data)
+                    res.raise_for_status()
+                    n_posts_added += 1
+                except requests.HTTPError as e:
+                    print(e)
+                    print(res.json())
+                    exit()
+            print("{} posts added by user: {}".format(n_posts_added, username))
                 
 if __name__ == '__main__':
     p = Populate()
     
-    p.add_members(3)
+    p.add_posts(3)
