@@ -9,6 +9,7 @@ from .permissions import IsModeratorOrAdminOrReadOnly
 from .models import Sub
 from .serializers import SubSerializer
 from redditors.models import UserSubMembership
+from posts.models import Post
 
 
 class SubListView(generics.ListCreateAPIView):
@@ -16,11 +17,11 @@ class SubListView(generics.ListCreateAPIView):
     serializer_class=SubSerializer
     
     def perform_create(self, serializer):
-        """ 
+        """
         Whomever creates this sub will be the sole inital moderator.
         Also make them a sub member.
         """
-        user = self.request.user        
+        user = self.request.user
         new_sub = serializer.save()
         new_sub.moderators.add(user)
         UserSubMembership.objects.create(user=user, sub=new_sub)
@@ -43,13 +44,13 @@ class SubSubscribeView(APIView):
         '''
         Users can subscribe or unsubscribe from here
         If they try to unsubscribe from a subreddit to which
-        they are not subscibed in the first place or 
+        they are not subscibed in the first place or
         a subreddit that doesnt exist respond with 404
         '''
         action = request.data['action']
         user = request.user
         title = kwargs['title']
-        try: 
+        try:
             sub = Sub.objects.get(title=title)
         except (Sub.DoesNotExist, Sub.MultipleObjectsReturned) as e:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -64,3 +65,43 @@ class SubSubscribeView(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
             membership.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        
+class SubPostView(APIView):
+    permission_classes = (IsAuthenticated,)
+    http_method_names=['post']
+
+    def post(self, request, format=None, **kwargs):
+        '''
+        Allow users to post to this subreddit. Users must be
+        authenticated and need to be a member of the subreddit to post.
+        '''
+        user = request.user
+        sub_title = kwargs['title']
+
+        try:
+            sub = Sub.objects.get(title=sub_title)
+        except Sub.DoesNotExist:
+            data = {"sub": "That subreddit does not exist."}
+            return Response(status=status.HTTP_404_NOT_FOUND,
+                            data=data)
+        
+        # Check on user membership
+        membership = UserSubMembership.objects.filter(user=user, sub=sub)
+        if not membership:
+            data_message = ("The authenticated user is not subscribed to "
+                            "the subreddit supplied.")
+            data = {"detail": data_message}
+            return Response(status=status.HTTP_403_FORBIDDEN,
+                            data=data)
+        
+        # If it all has worked out then create the post
+        post_data = {'title': request.data['title'],
+                     'body': request.data['body'],
+                     'sub': sub,
+                     'poster': user}
+        Post.objects.create(**post_data)
+        
+        return Response(status=status.HTTP_201_CREATED)
+            
+        
+            
