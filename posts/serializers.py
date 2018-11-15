@@ -15,7 +15,8 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     
     sub = serializers.HyperlinkedRelatedField(
         view_name='sub-detail',
-        queryset=Sub.objects.all()
+        queryset=Sub.objects.all(),
+        lookup_field='title'
     )
     
     class Meta:
@@ -37,6 +38,6 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
         if not data['sub'] in user.subs.all():
             raise serializers.ValidationError(
                 "You must be a member of the subreddit to post here."
-            )            
+            )
             
         return data
