@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils.timezone import now
 
 from .models import Post
 from redditors.models import User
@@ -21,12 +22,13 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     
     subreddit_title = serializers.SerializerMethodField()
     poster_username = serializers.SerializerMethodField()
+    age_in_days = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
         fields = ('url', 'id', 'created', 'updated', 'title', 'body',
                   'upvotes', 'sub', 'poster', 'subreddit_title',
-                  'poster_username',)
+                  'poster_username', 'age_in_days')
                     
                     
     def validate(self, data):
@@ -49,5 +51,8 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     def get_subreddit_title(self, obj):
         return obj.sub.title
     
-    def get_poster_username(Self, obj):
+    def get_poster_username(self, obj):
         return obj.poster.username
+
+    def get_age_in_days(self, obj):
+        return (now() - obj.created).days
