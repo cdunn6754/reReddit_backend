@@ -19,15 +19,19 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field='title'
     )
     
+    subreddit_title = serializers.SerializerMethodField()
+    poster_username = serializers.SerializerMethodField()
+    
     class Meta:
         model = Post
         fields = ('url', 'id', 'created', 'updated', 'title', 'body',
-                    'upvotes', 'sub', 'poster')
+                  'upvotes', 'sub', 'poster', 'subreddit_title',
+                  'poster_username',)
                     
                     
     def validate(self, data):
         """
-        Ensure that the use is a member of the sub
+        Ensure that the user is a member of the sub
         being posted to
         """
         user = None
@@ -41,3 +45,9 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
             )
             
         return data
+    
+    def get_subreddit_title(self, obj):
+        return obj.sub.title
+    
+    def get_poster_username(Self, obj):
+        return obj.poster.username
