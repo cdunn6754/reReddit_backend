@@ -33,7 +33,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     username = serializers.SlugField(
         max_length=128,
         min_length=4,
-        required=True, 
+        required=True,
         help_text=_(
             'Required, 4-128 characters, only letters, numbers, underscores and hyphens.'
             ),
@@ -48,10 +48,10 @@ class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128, min_length=6, write_only=True, required=True,
         help_text=_('Required, 6-128 characters')
-        ) 
+        )
     
     email = serializers.EmailField(
-        required=True, 
+        required=True,
         validators=[UniqueValidator(
                     queryset=User.objects.all(),
                     message="This email is already in use."
@@ -78,10 +78,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.save()
         
         for sub in validated_data['subs']:
-            UserSubMembership.objects.create(
-                user=user,
-                sub=sub,
-                )
+            UserSubMembership.objects.create(user=user,
+                                             sub=sub)
         
         return user
     
