@@ -77,9 +77,9 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         
-        for sub in validated_data['subs']:
-            UserSubMembership.objects.create(user=user,
-                                             sub=sub)
+        if validated_data.get('subs'):
+            for sub in validated_data['subs']:
+                UserSubMembership.objects.get_or_create(user=user, sub=sub)
         
         return user
     
