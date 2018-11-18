@@ -102,6 +102,3 @@ class SubPostView(APIView):
         Post.objects.create(**post_data)
         
         return Response(status=status.HTTP_201_CREATED)
-            
-        
-            
