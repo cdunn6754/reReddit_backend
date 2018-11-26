@@ -1,6 +1,8 @@
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Post
 from .serializers import PostSerializer
@@ -38,4 +40,14 @@ class SubPostListView(ListAPIView):
         
         queryset = Post.objects.filter(sub__title__exact=sub_title).order_by(order_by)
         return queryset
+    
+    def get(self, request, *args, **kwargs):
+        # Be sure the sub exist before anything else
+        sub_title = self.kwargs.get('sub_title', None)
+        try:
+            Sub.objects.get(title=sub_title)
+        except Sub.DoesNotExist:
+            return Response({'detail': "This subreddit does not exist"},
+                            status=status.HTTP_404_NOT_FOUND)
+        super().get(request, *args, **kwargs)
         
