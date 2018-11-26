@@ -49,5 +49,5 @@ class SubPostListView(ListAPIView):
         except Sub.DoesNotExist:
             return Response({'detail': "This subreddit does not exist"},
                             status=status.HTTP_404_NOT_FOUND)
-        super().get(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
         
