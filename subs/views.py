@@ -31,7 +31,7 @@ class SubListView(generics.ListCreateAPIView):
     
 class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset=Sub.objects.all()
-    serializer_class=SubSerializer
+    serializer_class = SubSerializer
     lookup_field = 'title'
     
     permission_classes = (IsModeratorOrAdminOrReadOnly,)
@@ -39,6 +39,7 @@ class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
 class SubSubscribeView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post']
+    serializer_class = SubSerializer
     
     def post(self, request, format=None, **kwargs):
         '''
@@ -55,16 +56,22 @@ class SubSubscribeView(APIView):
         except (Sub.DoesNotExist, Sub.MultipleObjectsReturned) as e:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
+        # We will return the sub data in the response
+        serializer = self.serializer_class(sub, context={'request':request})
+        subData = serializer.data
+        subData['subscribing'] = False
+        
         if action == 'sub':
             UserSubMembership.objects.get_or_create(user=user, sub=sub)
-            return Response(status=status.HTTP_201_CREATED)
+            subData['subscribing'] = True
+            return Response(subData, status=status.HTTP_201_CREATED)
         
         elif action == 'unsub':
             membership = UserSubMembership.objects.filter(user=user, sub=sub)
             if not membership:
                 return Response(status=status.HTTP_404_NOT_FOUND)
             membership.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(subData, status=status.HTTP_204_NO_CONTENT)
         
 class SubPostView(APIView):
     permission_classes = (IsAuthenticated,)
