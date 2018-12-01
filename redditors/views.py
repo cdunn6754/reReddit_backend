@@ -22,9 +22,22 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     lookup_field = 'username'
     
+    # It is more useful in the frontend to have the actual sub
+    # information than just the hyperlinks
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        subs = SubSerializer(instance.subs.all(),
+                             many=True,
+                             context={'request':request})
+        moderated_subs = SubSerializer(instance.moderated_subs.all(),
+                                       many=True,
+                                       context={'request':request})
+        return Response({**serializer.data, 'subs':subs.data, 'moderated_subs':moderated_subs.data})
+    
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = CreateUserSerializer    
+    serializer_class = CreateUserSerializer
     
 class UserLogoutView(APIView):
         permission_classes = [IsAuthenticated]
@@ -47,7 +60,7 @@ class UserLoginView(ObtainAuthToken):
             subs = SubSerializer(user.subs.all(),
                                  many=True,
                                  context={'request':request})
-            moderated_subs = SubSerializer(user.subs.all(),
+            moderated_subs = SubSerializer(user.moderated_subs.all(),
                                            many=True,
                                            context={'request':request})
             return Response({
@@ -57,5 +70,3 @@ class UserLoginView(ObtainAuthToken):
                 'moderated_subs': moderated_subs.data
             })
     
-
-
