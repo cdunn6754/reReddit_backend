@@ -95,8 +95,7 @@ class SubPostView(APIView):
         # Check on user membership
         membership = UserSubMembership.objects.filter(user=user, sub=sub)
         if not membership:
-            data_message = ("The authenticated user is not subscribed to "
-                            "the subreddit supplied.")
+            data_message = ("You are not subscribed to this subreddit.")
             data = {"detail": data_message}
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data=data)
