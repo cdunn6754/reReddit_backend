@@ -4,5 +4,6 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 urlpatterns = [
-    path('', views.CommentCreateView.as_view(), name='comment-list'),
+    path('', views.CommentListView.as_view(), name='comment-list'),
+    path('<int:pk>/', views.PostCommentView.as_view(), name='comment-detail')
 ]
