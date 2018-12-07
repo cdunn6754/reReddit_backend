@@ -42,7 +42,6 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         fields= ('poster', 'post', 'body', 'upvotes', 'parent', 'children',)
     
     def get_children(self, obj):
-        print("Serializer:\n{}".format(self.context))
         children = self.context['children'].get(obj.pk, [])
         serializer = self.__class__(
             children,

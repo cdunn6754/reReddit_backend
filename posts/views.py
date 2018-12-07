@@ -8,6 +8,7 @@ from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsPosterOrModOrAdminOrReadOnly
 from subs.models import Sub
+from utilities.reddit_orderby import ordering
 
 class PostListView(ListAPIView):
     queryset=Post.objects.all()
@@ -33,9 +34,6 @@ class SubPostListView(ListAPIView):
         order_by = self.request.query_params.get('orderby', 'popular')
         sub_title = self.kwargs.get('sub_title', None)
         
-        # A little change in nomenclature
-        ordering = {'popular': 'upvotes',
-                         'new': '-created',}
         order_by = ordering.get(order_by, None)
         
         queryset = Post.objects.filter(sub__title__exact=sub_title).order_by(order_by)
