@@ -28,7 +28,8 @@ class CommentSerializer(serializers.ModelSerializer):
         """
         The parent and the child (self) need to be made on the same post
         """
-        if not data['post'] == data['parent'].post:
+        parent = data['parent']
+        if parent and not data['post'] == data['parent'].post:
             raise serializers.ValidationError("The parent comment must be " +
                 "made on the same post."
             )

@@ -2,9 +2,11 @@ API_ROOT_URL = 'http://127.0.0.1:8000/'
 API_USER_URL = API_ROOT_URL + 'users/'
 API_SUB_URL = API_ROOT_URL + 'subreddits/'
 API_POST_URL = API_ROOT_URL + 'posts/'
+API_COMMENT_URL = API_ROOT_URL + 'comments/'
 
 API_USER_CREATE_URL = API_USER_URL + 'create/'
 API_USER_LOGIN_URL = API_USER_URL + 'login/'
+
 
 
 ## Functions

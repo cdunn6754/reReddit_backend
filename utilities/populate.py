@@ -7,7 +7,8 @@ import json
 import random
 
 from constants import (API_SUB_URL, API_USER_CREATE_URL, API_USER_LOGIN_URL,
-                       API_USER_URL, API_SUB_SUBSCRIBE_URL_)
+                       API_USER_URL, API_SUB_SUBSCRIBE_URL_, API_POST_URL,
+                       API_COMMENT_URL,)
 
 """
 TODO: Break this monster into smaller classes. I think one logical
@@ -35,14 +36,16 @@ class Populate:
         self.users = []
         # List of subs created, list of sub titles
         self.subs = []
-        # # List of posts created, list of 3-tuples
-        # # (post-title, subreddit title, poster username)
-        # self.posts = []
+        # # List of posts created, list of titles
+        self.posts = []
+        # List of comments, they are stored as a 2-tuple (id, post_title)
+        self.comments = []
         
         # Get the users and subs currently in the database
         self.get_users()
         self.get_subs()
-        #self.get_posts()
+        self.get_posts()
+        self.get_comments()
         
     def get_users(self):
         """
@@ -82,20 +85,37 @@ class Populate:
         print("{} subreddits read from database"
               " successfully".format(len(self.users)))
               
-    # def get_posts(self):
-    #     """
-    #     Read the posts that are currently in the database and
-    #     store them in the self.posts list
-    #     """
-    #     print("\nReading posts currently in database")
-    #     print("---------------------------------------")
-    #
-    #     res = requests.get(API_POST_URL)
-    #     for post in res.json():
-    #         title = post['title']
-    #         sub = post.sub.title
-    #         username = post.
-    #
+    def get_posts(self):
+        """
+        Read the posts that are currently in the database and
+        store them in the self.posts list
+        """
+        print("\nReading posts currently in database")
+        print("---------------------------------------")
+    
+        res = requests.get(API_POST_URL)
+        for post in res.json():
+            self.posts.append(post["title"])
+            
+        print("{} posts read from database successfully".format(
+            len(self.posts))
+        )
+    def get_comments(self):
+        """
+        Read the comments from the database and store them in self.comments
+        list, they are stored as a 2-tuple (comment id, comment post title)
+        """
+        print("\nReading posts currently in database")
+        print("---------------------------------------")
+        
+        res = requests.get(API_COMMENT_URL)
+        for comment in res.json():
+            self.comments.append((comment['pk'], comment['post'],))
+
+        print("{} comments read from database successfully".format(
+            len(self.comments))
+        )
+    
     def populate(self):
         """
         Call the various population functions that make api calls
@@ -223,7 +243,8 @@ class Populate:
             # random sub for each post by this user
             subs = np.random.choice(member_subs, max(n_to_add[idx],0))
             for sub_dict in subs:
-                post_title = self.fake.sentence(nb_words=4,
+                length_of_title = max(np.random.normal(10,6), 1)
+                post_title = self.fake.sentence(nb_words=13,
                                                variable_nb_words=True)
                 post_body = self.fake.text(max_nb_chars=150)
                 header = {'Authorization': 'Token {}'.format(user_data[1])}
@@ -240,8 +261,124 @@ class Populate:
                     print(res.json())
                     exit()
             print("{} posts added by user: {}".format(n_posts_added, username))
+        
+    def add_root_comments(self, n_per_user=5, comment_length=50):
+        """
+        Add fake comments to random posts. Again n_per_user is a mean
+        of a normal distribution from which each user is assigned a random
+        number of comments to make. For now users need not be subscribed to
+        a particlular subreddit to comment on posts made there so it pretty
+        random now.
+        
+        Here we are only creating root comments, that is, comments without
+        a parent.
+        
+        comment_length is the mean length of each comment in chars.
+        """
+        
+        print("\nGenerating root comments")
+        print("------------------------")
+        n_comments_added = 0
+        
+        # Generate random number of comments for each user to create
+        n_to_add = np.random.normal(
+            n_per_user,
+            n_per_user/2,
+            len(self.users)
+        ).astype(int)
+        
+        for idx, user_data in enumerate(self.users):
+            # Choose a random post and comment
+            posts = np.random.choice(self.posts, max(n_to_add[idx], 0))
+            for post_title in posts:
+                nb = random.randint(0,10)
+                body = (
+                    self.fake.paragraph(nb_sentences=nb) +
+                    self.fake.sentence(nb_words=nb+1)
+                )
+                upvotes = random.randint(1,500)
+                header = {'Authorization': 'Token {}'.format(user_data[1])}
+                data = {
+                    'body': body,
+                    'upvotes': upvotes,
+                    'poster': user_data[0],
+                    'post': post_title,
+                    'parent': None,
+                }
+                try:
+                    res = requests.post(API_COMMENT_URL,
+                        headers=header,
+                        json=data
+                    )
+                    res.raise_for_status()
+                    n_comments_added +=1
+                except requests.HTTPError as e:
+                    print(e)
+                    print(res.json())
+                    exit()
+        print("{} root comments added".format(n_comments_added))
+    
+    def add_child_comments(self, n_per_user=10, comment_length=50):
+        """
+        Add fake comments to random posts. Again n_per_user is a mean
+        of a normal distribution from which each user is assigned a random
+        number of comments to make. For now users need not be subscribed to
+        a particlular subreddit to comment on posts made there so it pretty
+        random now.
+        
+        Here we are creating child comments that will all have a parent.
+        The parents of a particular comment are seleted by randomly choosing
+        a comment from self.comments.
+        
+        comment_length is the mean length of each comment in chars.
+        """
+        
+        print("\nGenerating child comments")
+        print("------------------------")
+        n_comments_added = 0
+        
+        # Generate random number of comments for each user to create
+        n_to_add = np.random.normal(
+            n_per_user,
+            n_per_user/2,
+            len(self.users)
+        ).astype(int)
+        
+        for idx, user_data in enumerate(self.users):
+            
+            # randomize the comment size a little
+            nb = random.randint(0,10)
+            body = (
+                self.fake.paragraph(nb_sentences=nb) +
+                self.fake.sentence(nb_words=nb+1)
+            )
+            upvotes = random.randint(1,500)
+            idx = np.random.choice(len(self.comments))
+            parent_comment = self.comments[idx]
+            header = {'Authorization': 'Token {}'.format(user_data[1])}
+            data = {
+                'body': body,
+                'upvotes': upvotes,
+                'poster': user_data[0],
+                'post': parent_comment[1], # must be same post as the parent
+                'parent': parent_comment[0],
+            }
+            try:
+                res = requests.post(API_COMMENT_URL,
+                    headers=header,
+                    json=data
+                )
+                res.raise_for_status()
+                n_comments_added +=1
+            except requests.HTTPError as e:
+                print(e)
+                print(res.json())
+                exit()
+        print("{} child comments added".format(n_comments_added))
+        
                 
 if __name__ == '__main__':
     p = Populate()
     
-    p.add_posts(3)
+    p.add_child_comments(5)
+    p.add_child_comments(5)
