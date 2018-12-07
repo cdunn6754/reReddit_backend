@@ -24,23 +24,30 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('poster', 'post', 'body', 'upvotes', 'parent', 'pk')
         
-    def validate(self, data):
-        """
-        The parent and the child (self) need to be made on the same post
-        """
-        parent = data['parent']
-        if parent and not data['post'] == data['parent'].post:
-            raise serializers.ValidationError("The parent comment must be " +
-                "made on the same post."
-            )
-        return data
+    # def validate(self, data):
+    #     """
+    #     The parent and the child (self) need to be made on the same post
+    #     """
+    #     parent = data['parent']
+    #     if parent and not data['post'] == data['parent'].post:
+    #         raise serializers.ValidationError("The parent comment must be " +
+    #             "made on the same post."
+    #         )
+    #     return data
+    
+    def create(self, validated_data):
+        print(validated_data)
+        parent = validated_data.get('parent')
+        if parent:
+            validated_data['post'] = parent.post
+        return super().create(validated_data)
     
 class CommentTreeSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
-        fields= ('poster', 'post', 'body', 'upvotes', 'parent', 'children',)
+        fields= ('poster', 'post', 'body', 'upvotes', 'parent', 'pk', 'children',)
     
     def get_children(self, obj):
         children = self.context['children'].get(obj.pk, [])

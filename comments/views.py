@@ -25,7 +25,7 @@ class PostCommentView(ListAPIView):
         Narrows queryset to root comments on this post. Also
         orders depending on get parameter, default to popular.
         """
-        post_title = self.kwargs.get('post_title', "Bobby Post Title")
+        post_title = self.kwargs.get('post_title', "Least season difficult.")
         order_by = ordering.get(
             self.request.query_params.get('orderby', 'popular')
         )
