@@ -25,15 +25,17 @@ class PostCommentView(ListAPIView):
         Narrows queryset to root comments on this post. Also
         orders depending on get parameter, default to popular.
         """
-        post_title = self.kwargs.get('post_title', "Least season difficult.")
+        post_pk = self.kwargs.get('post_pk', None)
         order_by = ordering.get(
             self.request.query_params.get('orderby', 'popular')
         )
         
-        return Comment.objects.filter(
-            post__title=post_title,
+        queryset = Comment.objects.filter(
+            post__pk=post_pk,
             parent=None
         ).order_by('-upvotes')
+        print(queryset)
+        return queryset
     
     def list(self, request, *args, **kwargs):
         root_comments = self.filter_queryset(self.get_queryset())
