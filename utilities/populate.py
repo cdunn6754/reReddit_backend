@@ -36,7 +36,7 @@ class Populate:
         self.users = []
         # List of subs created, list of sub titles
         self.subs = []
-        # # List of posts created, list of titles
+        # # List of posts created, list of post ids
         self.posts = []
         # List of comments, they are stored as a 2-tuple (id, post_title)
         self.comments = []
@@ -95,7 +95,7 @@ class Populate:
     
         res = requests.get(API_POST_URL)
         for post in res.json():
-            self.posts.append(post["title"])
+            self.posts.append((post["pk"]))
             
         print("{} posts read from database successfully".format(
             len(self.posts))
@@ -290,7 +290,7 @@ class Populate:
         for idx, user_data in enumerate(self.users):
             # Choose a random post and comment
             posts = np.random.choice(self.posts, max(n_to_add[idx], 0))
-            for post_title in posts:
+            for post_pk in posts:
                 nb = random.randint(0,10)
                 body = (
                     self.fake.paragraph(nb_sentences=nb) +
@@ -302,8 +302,7 @@ class Populate:
                     'body': body,
                     'upvotes': upvotes,
                     'poster': user_data[0],
-                    'post': post_title,
-                    'parent': None,
+                    'parent_fn': "t2_{}".format(post_pk),
                 }
                 try:
                     res = requests.post(API_COMMENT_URL,
@@ -360,8 +359,7 @@ class Populate:
                 'body': body,
                 'upvotes': upvotes,
                 'poster': user_data[0],
-                'post': parent_comment[1], # must be same post as the parent
-                'parent': parent_comment[0],
+                'parent_fn': "t1_{}".format(parent_comment[0])
             }
             try:
                 res = requests.post(API_COMMENT_URL,
@@ -380,5 +378,6 @@ class Populate:
 if __name__ == '__main__':
     p = Populate()
     
+    p.add_root_comments(5)
     p.add_child_comments(5)
     p.add_child_comments(5)
