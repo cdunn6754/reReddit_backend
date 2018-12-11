@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from collections import defaultdict
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 from .models import Comment
 from redditors.models import User
+from redditors.serializers import UserSerializer
 from posts.models import Post
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -65,13 +67,23 @@ class CommentSerializer(serializers.ModelSerializer):
             validated_data['post'] = Post.objects.get(pk=parent_pk)
         
         return super().create(validated_data)
+
+class CommentPosterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'username', 'karma')
     
 class CommentTreeSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
+    poster = CommentPosterSerializer()
+    created = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
-        fields= ('poster', 'post', 'body', 'upvotes', 'parent', 'pk', 'children',)
+        fields= (
+            'poster', 'post', 'body', 'upvotes', 'parent',
+            'created', 'pk', 'children',
+        )
     
     def get_children(self, obj):
         children = self.context['children'].get(obj.pk, [])
@@ -81,5 +93,6 @@ class CommentTreeSerializer(serializers.ModelSerializer):
             many=True,
         )
         return serializer.data
-        
-        
+    
+    def get_created(self,obj):
+        return naturaltime(obj.created)

@@ -19,7 +19,6 @@ class PostCommentView(ListAPIView):
     """
     queryset = Comment.objects.all()
     serializer_class = CommentTreeSerializer
-    tree_serializer_class = CommentTreeSerializer
     def get_queryset(self):
         """
         Narrows queryset to root comments on this post. Also
@@ -34,7 +33,6 @@ class PostCommentView(ListAPIView):
             post__pk=post_pk,
             parent=None
         ).order_by('-upvotes')
-        print(queryset)
         return queryset
     
     def list(self, request, *args, **kwargs):

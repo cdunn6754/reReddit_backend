@@ -5,6 +5,8 @@ from redditors.models import User
 from posts.models import Post
 
 class Comment(MPTTModel):
+    created = models.DateTimeField(auto_now_add=True)
+    
     poster = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     
