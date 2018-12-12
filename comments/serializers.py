@@ -15,7 +15,7 @@ class CommentSerializer(serializers.ModelSerializer):
     )
     poster = serializers.SlugRelatedField(
         slug_field='username',
-        queryset = User.objects.all()
+        read_only=True,
     )
     parent = serializers.PrimaryKeyRelatedField(
         read_only=True,
@@ -59,7 +59,6 @@ class CommentSerializer(serializers.ModelSerializer):
         
         parent_fn = validated_data.pop('parent_fn')
         parent_pk = parent_fn[3:]
-        print("\nout: {}, [1]: {}\n".format(parent_fn, parent_fn[1]))
         
         if int(parent_fn[1]) == 1:
             validated_data['parent'] = Comment.objects.get(pk=parent_pk)

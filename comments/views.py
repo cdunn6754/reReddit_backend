@@ -1,5 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, ListAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import status
 from collections import defaultdict
 
@@ -11,6 +12,15 @@ from utilities.reddit_orderby import ordering
 class CommentListView(ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    
+    def perform_create(self, serializer):
+        """
+        You need to be authenticated to post a comment.
+        Take that authenticated user and make them the poster
+        """
+        serializer.save(poster=self.request.user)
+        
 
 class PostCommentView(ListAPIView):
     """
