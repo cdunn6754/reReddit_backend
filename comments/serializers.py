@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from collections import defaultdict
 from django.contrib.humanize.templatetags.humanize import naturaltime
 
@@ -61,10 +61,21 @@ class CommentSerializer(serializers.ModelSerializer):
         parent_pk = parent_fn[3:]
         
         if int(parent_fn[1]) == 1:
-            validated_data['parent'] = Comment.objects.get(pk=parent_pk)
+            try:
+                validated_data['parent'] = Comment.objects.get(pk=parent_pk)
+            except Comment.DoesNotExist:
+                error_message = ("The comment you are replying to is no "
+                    "longer available"
+                )
+                raise exceptions.NotFound(detail=error_message)
         elif int(parent_fn[1]) == 2:
-            validated_data['post'] = Post.objects.get(pk=parent_pk)
-        
+            try:
+                validated_data['post'] = Post.objects.get(pk=parent_pk)
+            except Post.DoesNotExist:
+                error_message = ("The post you are replying to is no "
+                    "longer available"
+                )
+                raise exceptions.NotFound(detail=error_message)
         return super().create(validated_data)
 
 class CommentPosterSerializer(serializers.ModelSerializer):
