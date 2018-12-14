@@ -11,7 +11,18 @@ class Comment(MPTTModel):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     
     body = models.TextField()
-    upvotes = models.IntegerField(default=0)
+
+    @property
+    def upvotes(self):
+        """
+        This doesn't need it's own db field. Can be calculated
+        based on the m2m through table CommentVote. This will
+        follow the reverse relation to CommentVote and sum votes.
+        They are +1 for upvote, -1 for downvote and 0 for no vote.
+        """
+        return self.votes.all().aggregate(models.Sum('vote_type')).get(
+            'vote_type__sum'
+        ) or 0
     
     # Every user only gets one vote per comment
     voters = models.ManyToManyField(
