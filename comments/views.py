@@ -1,13 +1,21 @@
-from rest_framework.generics import ListCreateAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework import status
 from collections import defaultdict
 
 from .models import Comment
-from .serializers import CommentSerializer, CommentTreeSerializer
+from .serializers import (
+    CommentSerializer, CommentTreeSerializer, CommentVoterSerializer,
+)
 from utilities.reddit_orderby import ordering
 
+class CreateCommentVoteView(CreateAPIView):
+    serializer_class = CommentVoterSerializer
+    permission_classes = (IsAuthenticated,)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class CommentListView(ListCreateAPIView):
     queryset = Comment.objects.all()

@@ -13,10 +13,44 @@ class Comment(MPTTModel):
     body = models.TextField()
     upvotes = models.IntegerField(default=0)
     
+    # Every user only gets one vote per comment
+    voters = models.ManyToManyField(
+        User,
+        through='CommentVote',
+        related_name='voted_comments'
+    )
+    
     parent = TreeForeignKey(
-        'self', on_delete=models.CASCADE, null=True,
-        blank=True, related_name='children'
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
     )
     
     def __str__(self):
         return str(self.body)[:20]
+
+class CommentVote(models.Model):
+    UPVOTE = 1
+    DOWNVOTE = -1
+    NO_VOTE = 0
+    VOTE_CHOICES = (
+        (UPVOTE, 'upvote'),
+        (DOWNVOTE, 'downvote'),
+        (NO_VOTE, 'no_vote'),
+    )
+    
+    vote_type = models.IntegerField(
+        choices=VOTE_CHOICES,
+        default=NO_VOTE,
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='votes'
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('comment', 'user')

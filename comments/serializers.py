@@ -2,7 +2,7 @@ from rest_framework import serializers, exceptions
 from collections import defaultdict
 from django.contrib.humanize.templatetags.humanize import naturaltime
 
-from .models import Comment
+from .models import Comment, CommentVote
 from redditors.models import User
 from redditors.serializers import UserSerializer
 from posts.models import Post
@@ -106,3 +106,23 @@ class CommentTreeSerializer(serializers.ModelSerializer):
     
     def get_created(self,obj):
         return naturaltime(obj.created)
+    
+class CommentVoterSerializer(serializers.ModelSerializer):
+    comment = serializers.PrimaryKeyRelatedField(
+        queryset=Comment.objects.all()
+    )
+    
+    class Meta:
+        model = CommentVote
+        fields = (
+            'vote_type', 'comment',
+        )
+    def create(self, validated_data):
+        defaults = {'vote_type': validated_data.pop('vote_type')}
+        instance, created = CommentVote.objects.update_or_create(
+            **validated_data,
+            defaults=defaults
+        )
+        return instance
+        
+        

@@ -13,7 +13,7 @@ class User(AbstractUser):
         
     )
     #moderated_subs ManyToManyField, related_name="moderated_subs"
-
+    #upvoted_comment ManyToManyField, related_name="voted_comments"
 class UserSubMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sub = models.ForeignKey(Sub, on_delete=models.CASCADE)
