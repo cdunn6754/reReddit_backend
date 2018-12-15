@@ -76,12 +76,13 @@ class CommentTreeSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     poster = CommentPosterSerializer()
     created = serializers.SerializerMethodField()
+    vote_state = serializers.SerializerMethodField(required=False)
     
     class Meta:
         model = Comment
         fields= (
             'poster', 'post', 'body', 'upvotes', 'parent',
-            'created', 'pk', 'children',
+            'created', 'vote_state', 'pk', 'children',
         )
     
     def get_children(self, obj):
@@ -93,8 +94,20 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         )
         return serializer.data
     
-    def get_created(self,obj):
+    def get_created(self, obj):
         return naturaltime(obj.created)
+    
+    def get_vote_state(self, obj):
+        request = self.context.get('request')
+        if request:
+            username = request.query_params.get('user')
+            print(username)
+            try:
+                vote = obj.voters.get(username=username)
+                return vote.vote_type
+            except:
+                return None
+        return None
     
 class CommentVoterSerializer(serializers.ModelSerializer):
     comment = serializers.PrimaryKeyRelatedField(
