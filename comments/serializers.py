@@ -81,8 +81,8 @@ class CommentTreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields= (
-            'poster', 'post', 'body', 'upvotes', 'parent',
-            'created', 'vote_state', 'pk', 'children',
+            'post', 'body', 'upvotes', 'parent',
+            'created', 'vote_state', 'pk', 'poster', 'children',
         )
     
     def get_children(self, obj):
@@ -115,7 +115,10 @@ class CommentVoterSerializer(serializers.ModelSerializer):
             'vote_type', 'comment',
         )
     def create(self, validated_data):
-        defaults = {'vote_type': validated_data.pop('vote_type')}
+        try:
+            defaults = {'vote_type': validated_data.pop('vote_type')}
+        except KeyError:
+            raise exceptions.ValidationError("vote_type is a required field")
         instance, created = CommentVote.objects.update_or_create(
             **validated_data,
             defaults=defaults
