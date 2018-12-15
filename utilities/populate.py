@@ -8,7 +8,7 @@ import random
 
 from constants import (API_SUB_URL, API_USER_CREATE_URL, API_USER_LOGIN_URL,
                        API_USER_URL, API_SUB_SUBSCRIBE_URL_, API_POST_URL,
-                       API_COMMENT_URL,)
+                       API_COMMENT_URL, API_COMMENT_VOTE_URL,)
 
 """
 TODO: Break this monster into smaller classes. I think one logical
@@ -320,7 +320,7 @@ class Populate:
         of a normal distribution from which each user is assigned a random
         number of comments to make. For now users need not be subscribed to
         a particlular subreddit to comment on posts made there so it pretty
-        random now.
+        random.
         
         Here we are creating child comments that will all have a parent.
         The parents of a particular comment are seleted by randomly choosing
@@ -341,43 +341,81 @@ class Populate:
         ).astype(int)
         
         for idx, user_data in enumerate(self.users):
-            
-            # randomize the comment size a little
-            nb = random.randint(0,10)
-            body = (
-                self.fake.paragraph(nb_sentences=nb) +
-                self.fake.sentence(nb_words=nb+1)
-            )
-            upvotes = random.randint(1,500)
-            idx = np.random.choice(len(self.comments))
-            parent_comment = self.comments[idx]
             header = {'Authorization': 'Token {}'.format(user_data[1])}
-            data = {
-                'body': body,
-                'upvotes': upvotes,
-                'poster': user_data[0],
-                'parent_fn': "t1_{}".format(parent_comment[0])
-            }
-            try:
-                res = requests.post(API_COMMENT_URL,
-                    headers=header,
-                    json=data
+            for _ in range(n_to_add[idx]):
+                # randomize the comment size a little
+                nb = random.randint(0,10)
+                body = (
+                    self.fake.paragraph(nb_sentences=nb) +
+                    self.fake.sentence(nb_words=nb+1)
                 )
-                res.raise_for_status()
-                n_comments_added +=1
-            except requests.HTTPError as e:
-                print(e)
-                print(res.json())
-                exit()
+                p_idx = np.random.choice(len(self.comments))
+                parent_comment = self.comments[p_idx]
+                data = {
+                    'body': body,
+                    'parent_fn': "t1_{}".format(parent_comment[0])
+                }
+                try:
+                    res = requests.post(API_COMMENT_URL,
+                        headers=header,
+                        json=data
+                    )
+                    res.raise_for_status()
+                    n_comments_added +=1
+                except requests.HTTPError as e:
+                    print(e)
+                    print(res.json())
+                    exit()
         print("{} child comments added".format(n_comments_added))
         
-    def add_comment_votes(self):
-        pass
+    def add_comment_votes(self, n_per_user=10):
+        """
+        n_per_user is again the mean of a normal distribution
+        that is used randomize comments per user a little bit.
+        Once that is determined each user randomly provides 2/3
+        of those as upvotes and 1/3 as downvotes on comments.
+        """
         
-                
+        print("\nGenerating comment votes")
+        print("------------------------")
+        n_comment_votes_added = 0
+        
+        # Generate random number of comment votes for each user to create
+        n_to_add = np.random.normal(
+            n_per_user,
+            n_per_user/2,
+            len(self.users)
+        ).astype(int)
+        
+        for idx, user_data in enumerate(self.users):
+            header = {'Authorization': 'Token {}'.format(user_data[1])}
+            current_to_add = n_to_add[idx]
+            vote_types = [1]*current_to_add
+            vote_types[0:int(current_to_add/3)] = [-1]*int(current_to_add/3)
+            for vote_number in range(current_to_add):
+                c_idx = np.random.choice(len(self.comments))
+                comment_pk = self.comments[c_idx][0]
+                data = {
+                    'vote_type' : vote_types[vote_number],
+                    'comment' : comment_pk,
+                }
+                try:
+                    res = requests.post(
+                        API_COMMENT_VOTE_URL,
+                        headers=header,
+                        json=data
+                    )
+                    res.raise_for_status()
+                    n_comment_votes_added +=1
+                except requests.HTTPError as e:
+                    print(e)
+                    print(res.json())
+                    exit()
+        print("{} comment votes added".format(n_comment_votes_added))
+        
 if __name__ == '__main__':
     p = Populate()
     
-    p.add_root_comments(5)
-    p.add_child_comments(5)
-    p.add_child_comments(5)
+    #p.add_root_comments(5)
+    #p.add_child_comments(5)
+    p.add_comment_votes(50)

@@ -51,7 +51,7 @@ class PostCommentView(ListAPIView):
         model attributes nomenclature.
         """
         sort_functions = {
-            'popular': (lambda comment: comment.upvotes),
+            'popular': (lambda comment: -comment.upvotes),
             'new' : (lambda comment: (timezone.now() - comment.created)),
         }
         api_sort_key = self.request.query_params.get('orderby', 'popular')

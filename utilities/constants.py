@@ -7,6 +7,8 @@ API_COMMENT_URL = API_ROOT_URL + 'comments/'
 API_USER_CREATE_URL = API_USER_URL + 'create/'
 API_USER_LOGIN_URL = API_USER_URL + 'login/'
 
+API_COMMENT_VOTE_URL = API_COMMENT_URL + 'vote/'
+
 
 
 ## Functions
