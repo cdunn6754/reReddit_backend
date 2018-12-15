@@ -98,16 +98,11 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         return naturaltime(obj.created)
     
     def get_vote_state(self, obj):
-        request = self.context.get('request')
-        if request:
-            username = request.query_params.get('user')
-            print(username)
-            try:
-                vote = obj.voters.get(username=username)
-                return vote.vote_type
-            except:
-                return None
-        return None
+        try:
+            vote = obj.votes.all().get(user_id=self.context['comment_user_pk'])
+            return vote.vote_type
+        except:
+            return None
     
 class CommentVoterSerializer(serializers.ModelSerializer):
     comment = serializers.PrimaryKeyRelatedField(

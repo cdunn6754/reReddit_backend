@@ -296,12 +296,9 @@ class Populate:
                     self.fake.paragraph(nb_sentences=nb) +
                     self.fake.sentence(nb_words=nb+1)
                 )
-                upvotes = random.randint(1,500)
                 header = {'Authorization': 'Token {}'.format(user_data[1])}
                 data = {
                     'body': body,
-                    'upvotes': upvotes,
-                    'poster': user_data[0],
                     'parent_fn': "t2_{}".format(post_pk),
                 }
                 try:
@@ -373,6 +370,9 @@ class Populate:
                 print(res.json())
                 exit()
         print("{} child comments added".format(n_comments_added))
+        
+    def add_comment_votes(self):
+        pass
         
                 
 if __name__ == '__main__':

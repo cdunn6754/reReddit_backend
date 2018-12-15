@@ -40,7 +40,7 @@ class Comment(MPTTModel):
     )
     
     def __str__(self):
-        return str(self.body)[:20]
+        return str("pk: {}, {}".format(self.pk, self.body[:20]))
 
 class CommentVote(models.Model):
     UPVOTE = 1
