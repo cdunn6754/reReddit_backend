@@ -19,7 +19,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
@@ -36,5 +35,6 @@ urlpatterns = [
     path('subreddits/', include('subs.urls')),
     path('posts/', include('posts.urls')),
     path('comments/', include('comments.urls')),
+    path('vote/', include('votes.urls')),    
     path('api-auth/', include('rest_framework.urls')),
 ]

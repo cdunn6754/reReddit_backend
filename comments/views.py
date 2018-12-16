@@ -8,16 +8,9 @@ from django.utils import timezone
 
 from .models import Comment
 from .serializers import (
-    CommentSerializer, CommentTreeSerializer, CommentVoterSerializer,
+    CommentSerializer, CommentTreeSerializer
 )
 from redditors.models import User
-
-class CreateCommentVoteView(CreateAPIView):
-    serializer_class = CommentVoterSerializer
-    permission_classes = (IsAuthenticated,)
-    
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class CommentListView(ListCreateAPIView):
     """

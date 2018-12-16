@@ -2,7 +2,7 @@ from rest_framework import serializers, exceptions
 from collections import defaultdict
 from django.contrib.humanize.templatetags.humanize import naturaltime
 
-from .models import Comment, CommentVote
+from .models import Comment
 from redditors.models import User
 from redditors.serializers import UserSerializer
 from posts.models import Post
@@ -103,26 +103,5 @@ class CommentTreeSerializer(serializers.ModelSerializer):
             return vote.vote_type
         except:
             return None
-    
-class CommentVoterSerializer(serializers.ModelSerializer):
-    comment = serializers.PrimaryKeyRelatedField(
-        queryset=Comment.objects.all()
-    )
-    
-    class Meta:
-        model = CommentVote
-        fields = (
-            'vote_type', 'comment',
-        )
-    def create(self, validated_data):
-        try:
-            defaults = {'vote_type': validated_data.pop('vote_type')}
-        except KeyError:
-            raise exceptions.ValidationError("vote_type is a required field")
-        instance, created = CommentVote.objects.update_or_create(
-            **validated_data,
-            defaults=defaults
-        )
-        return instance
         
         

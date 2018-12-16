@@ -27,7 +27,7 @@ class Comment(MPTTModel):
     # Every user only gets one vote per comment
     voters = models.ManyToManyField(
         User,
-        through='CommentVote',
+        through='votes.CommentVote',
         related_name='voted_comments'
     )
     
@@ -41,27 +41,3 @@ class Comment(MPTTModel):
     
     def __str__(self):
         return str("pk: {}, {}".format(self.pk, self.body[:20]))
-
-class CommentVote(models.Model):
-    UPVOTE = 1
-    DOWNVOTE = -1
-    NO_VOTE = 0
-    VOTE_CHOICES = (
-        (UPVOTE, 'upvote'),
-        (DOWNVOTE, 'downvote'),
-        (NO_VOTE, 'no_vote'),
-    )
-    
-    vote_type = models.IntegerField(
-        choices=VOTE_CHOICES,
-        default=NO_VOTE,
-    )
-    comment = models.ForeignKey(
-        Comment,
-        on_delete=models.CASCADE,
-        related_name='votes'
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('comment', 'user')

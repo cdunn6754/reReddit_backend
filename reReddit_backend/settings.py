@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'redditors',
     'posts',
     'comments',
+    'votes',
 ]
 
 MIDDLEWARE = [
