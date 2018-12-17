@@ -40,8 +40,10 @@ class CommentSerializer(serializers.ModelSerializer):
         """
         # TODO get a regex
         if not (value.startswith("t") and value[2] == "_"):
-            raise serializers.ValidationError("parent_fn must be a 'full name' "
-                "and begin with either t1_ or t2_")
+            raise serializers.ValidationError(
+                "parent_fn must be a 'full name' "
+                "and begin with either 't1_' or 't2_'"
+            )
         return value
     
     def create(self, validated_data):

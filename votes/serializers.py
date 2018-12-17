@@ -23,3 +23,6 @@ class CommentVoteSerializer(serializers.ModelSerializer):
             defaults=defaults
         )
         return instance
+    
+class PostVoteSerializer(serializers.ModelSerializer):
+    pass
