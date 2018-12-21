@@ -13,8 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='title',
         read_only=True
     )
-    poster = serializers.SlugRelatedField(
-        slug_field='username',
+    poster = serializers.PrimaryKeyRelatedField(
         read_only=True,
     )
     parent = serializers.PrimaryKeyRelatedField(
