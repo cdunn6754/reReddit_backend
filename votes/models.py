@@ -27,3 +27,27 @@ class CommentVote(models.Model):
     
     class Meta:
         unique_together = ('comment', 'user')
+        
+class PostVote(models.Model):
+    UPVOTE = 1
+    DOWNVOTE = -1
+    NO_VOTE = 0
+    VOTE_CHOICES = (
+        (UPVOTE, 'upvote'),
+        (DOWNVOTE, 'downvote'),
+        (NO_VOTE, 'no_vote'),
+    )
+    
+    vote_type = models.IntegerField(
+        choices=VOTE_CHOICES,
+        default=NO_VOTE,
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='votes'
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('post', 'user')

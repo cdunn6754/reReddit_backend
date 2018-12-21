@@ -1,18 +1,9 @@
 from rest_framework import serializers
 
-from .models import CommentVote
-from comments.models import Comment
+from .models import CommentVote, PostVote
+from comments.models import Comment, Post
 
-class CommentVoteSerializer(serializers.ModelSerializer):
-    comment = serializers.PrimaryKeyRelatedField(
-        queryset=Comment.objects.all()
-    )
-    
-    class Meta:
-        model = CommentVote
-        fields = (
-            'vote_type', 'comment',
-        )
+class VoteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             defaults = {'vote_type': validated_data.pop('vote_type')}
@@ -23,6 +14,25 @@ class CommentVoteSerializer(serializers.ModelSerializer):
             defaults=defaults
         )
         return instance
+
+class CommentVoteSerializer(VoteSerializer):
+    comment = serializers.PrimaryKeyRelatedField(
+        queryset=Comment.objects.all()
+    )
     
-class PostVoteSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = CommentVote
+        fields = (
+            'vote_type', 'comment',
+        )
+
+class PostVoteSerializer(VoteSerializer):
+    post = serializers.PrimaryKeyRelatedField(
+        queryset=Post.objects.all()
+    )
+
+    class Meta:
+        model = PostVote
+        fields = (
+            'vote_type', 'post',
+        )

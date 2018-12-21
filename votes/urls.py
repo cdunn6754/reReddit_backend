@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 urlpatterns = [
-    path('', views.CreateCommentVoteView.as_view(), name='vote'),
+    path('', views.CreateVoteView.as_view(), name='vote'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

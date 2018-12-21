@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from comments.models import Comment
 from .serializers import CommentVoteSerializer, PostVoteSerializer
 
-class CreateCommentVoteView(CreateAPIView):
+class CreateVoteView(CreateAPIView):
     comment_serializer_class = CommentVoteSerializer
     post_serializer_class = PostVoteSerializer
     permission_classes = (IsAuthenticated,)
