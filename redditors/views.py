@@ -66,7 +66,9 @@ class UserLoginView(ObtainAuthToken):
             return Response({
                 'token': token.key,
                 'username': user.username,
+                'pk': user.pk,
                 'subs': subs.data,
                 'moderated_subs': moderated_subs.data
+
             })
     

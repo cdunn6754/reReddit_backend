@@ -20,8 +20,8 @@ class CreateCommentVoteView(CreateAPIView):
         """
         fn = self.request.data.get('item_fn')
         assert (fn and (fn[0:3] == "t1_" or fn[0:3] =='t2_')), (
-            "item_fn must be a 'full name' "
-            "and begin with either 't1_' or 't2_'"
+            "item_fn is required and must be a 'full name', "
+            "i.e. it must begin with either 't1_' or 't2_'"
         )
         if fn[0:3] == "t1_":
             self.request.data['comment'] = fn[3:]
