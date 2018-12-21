@@ -24,11 +24,13 @@ class CommentSerializer(serializers.ModelSerializer):
     parent_fn = serializers.CharField(
         write_only=True
     )
+    vote_state = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
         fields = (
-            'post', 'poster', 'parent', 'body', 'upvotes', 'parent_fn', 'pk',
+            'post', 'poster', 'parent', 'body', 'upvotes',
+            'parent_fn', 'pk', 'vote_state'
         )
     
     def validate_parent_fn(self, value):
@@ -69,6 +71,9 @@ class CommentSerializer(serializers.ModelSerializer):
                 raise exceptions.NotFound(detail=error_message)
         return super().create(validated_data)
 
+    def get_vote_state(self, obj):
+        return 0
+
 class CommentPosterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -104,6 +109,6 @@ class CommentTreeSerializer(serializers.ModelSerializer):
             vote = obj.votes.all().get(user_id=self.context['comment_user_pk'])
             return vote.vote_type
         except:
-            return None
+            return 0
         
         
