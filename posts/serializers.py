@@ -20,12 +20,13 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     poster_username = serializers.SerializerMethodField()
     created = serializers.SerializerMethodField()
     updated = serializers.SerializerMethodField()
+    vote_state = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
         fields = ('pk', 'created', 'updated', 'title', 'body',
                   'upvotes', 'subreddit', 'poster', 'subreddit_title',
-                  'poster_username')
+                  'poster_username', 'vote_state')
                     
                     
     def validate(self, data):
@@ -56,3 +57,11 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_updated(self, obj):
         return naturaltime(obj.updated)
+
+    def get_vote_state(self, obj):
+        try:
+            vote = obj.votes.all().get(user_id=self.context['post_user_pk'])
+            print(vote)
+            return vote.vote_type
+        except:
+            return 0
