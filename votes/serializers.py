@@ -9,11 +9,19 @@ class VoteSerializer(serializers.ModelSerializer):
             defaults = {'vote_type': validated_data.pop('vote_type')}
         except KeyError:
             raise exceptions.ValidationError("vote_type is a required field")
-        instance, _ = self.Meta.model.objects.update_or_create(
+        
+        vote, created = self.Meta.model.objects.get_or_create(
             **validated_data,
             defaults=defaults
         )
-        return instance
+        # need to unvote if duplicating a previous vote
+        if not created:
+            if vote.vote_type == defaults['vote_type']:
+                vote.vote_type = 0
+            else:
+                vote.vote_type = defaults['vote_type']
+            vote.save()
+        return vote
 
 class CommentVoteSerializer(VoteSerializer):
     comment = serializers.PrimaryKeyRelatedField(

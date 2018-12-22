@@ -60,9 +60,7 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_vote_state(self, obj):
         try:
-            print(self.context['post_user_pk'])
             vote = obj.votes.all().get(user_id=self.context['post_user_pk'])
-            print(vote)
             return vote.vote_type
         except:
             return 0
