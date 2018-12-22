@@ -10,10 +10,25 @@ class Post(models.Model):
     
     title = models.CharField(max_length=150, unique=True)
     body = models.TextField()
-    upvotes = models.IntegerField(default=0)
     
     subreddit = models.ForeignKey(Sub, on_delete=models.CASCADE)
     poster = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    voters = models.ManyToManyField(
+        User,
+        through='votes.PostVote',
+        related_name='voted_posts',
+    )
+    
+    @property
+    def upvotes(self):
+        """
+        Just add up the votes vote_types.
+        """
+        return self.votes.all().aggregate(models.Sum('vote_type')).get(
+            'vote_type__sum'
+        ) or 0
+    
     
     def __str__(self):
         return str(self.title)

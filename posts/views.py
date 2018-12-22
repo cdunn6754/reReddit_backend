@@ -36,7 +36,7 @@ class SubPostListView(ListAPIView):
         
         order_by = ordering.get(order_by, None)
         
-        queryset = Post.objects.filter(sub__title__exact=sub_title).order_by(order_by)
+        queryset = Post.objects.filter(subreddit__title=sub_title).order_by(order_by)
         return queryset
     
     def get(self, request, *args, **kwargs):

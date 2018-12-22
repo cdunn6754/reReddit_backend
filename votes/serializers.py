@@ -9,7 +9,7 @@ class VoteSerializer(serializers.ModelSerializer):
             defaults = {'vote_type': validated_data.pop('vote_type')}
         except KeyError:
             raise exceptions.ValidationError("vote_type is a required field")
-        instance, _ = CommentVote.objects.update_or_create(
+        instance, _ = self.Meta.model.objects.update_or_create(
             **validated_data,
             defaults=defaults
         )
