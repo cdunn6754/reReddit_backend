@@ -12,7 +12,7 @@ class Post(models.Model):
     body = models.TextField()
     upvotes = models.IntegerField(default=0)
     
-    sub = models.ForeignKey(Sub, on_delete=models.CASCADE)
+    subreddit = models.ForeignKey(Sub, on_delete=models.CASCADE)
     poster = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     
     def __str__(self):

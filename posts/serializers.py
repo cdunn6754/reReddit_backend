@@ -8,17 +8,12 @@ from subs.models import Sub
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
     
-    poster = serializers.HyperlinkedRelatedField(
-        view_name='user-detail',
-        #queryset=User.objects.all(),
+    poster = serializers.PrimaryKeyRelatedField(
         read_only=True,
-        lookup_field='username'
     )
     
-    sub = serializers.HyperlinkedRelatedField(
-        view_name='sub-detail',
+    subreddit = serializers.PrimaryKeyRelatedField(
         queryset=Sub.objects.all(),
-        lookup_field='title'
     )
     
     subreddit_title = serializers.SerializerMethodField()
@@ -29,7 +24,7 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Post
         fields = ('pk', 'created', 'updated', 'title', 'body',
-                  'upvotes', 'sub', 'poster', 'subreddit_title',
+                  'upvotes', 'subreddit', 'poster', 'subreddit_title',
                   'poster_username')
                     
                     
@@ -51,7 +46,7 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
         return data
     
     def get_subreddit_title(self, obj):
-        return obj.sub.title
+        return obj.subreddit.title
     
     def get_poster_username(self, obj):
         return obj.poster.username
