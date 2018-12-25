@@ -11,6 +11,7 @@ class Comment(MPTTModel):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     
     body = models.TextField()
+    deleted = models.BooleanField(default=False)
 
     @property
     def upvotes(self):

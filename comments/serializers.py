@@ -29,7 +29,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = (
             'post', 'poster', 'parent', 'body', 'upvotes',
-            'parent_fn', 'pk', 'vote_state'
+            'parent_fn', 'pk', 'vote_state', 'deleted',
         )
     
     def validate_parent_fn(self, value):
@@ -88,7 +88,7 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         model = Comment
         fields= (
             'post', 'body', 'upvotes', 'parent',
-            'created', 'vote_state', 'pk', 'poster', 'children',
+            'created', 'vote_state', 'deleted', 'pk', 'poster', 'children',
         )
     
     def get_children(self, obj):
@@ -110,4 +110,19 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         except:
             return 0
         
+class DeleteCommentSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Comment
+        fields=('pk',)
+        
+    def update(self, instance, validated_data):
+        # Just set the fields to a generic deleted message
+        poster = getattr(instance, 'poster')
+        setattr(instance, 'poster', None)
+        setattr(instance, 'body', 'deleted')
+        setattr(instance, 'deleted', True)
+        instance.save()
+        
+        return instance
         
