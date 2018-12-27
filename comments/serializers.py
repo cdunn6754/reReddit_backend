@@ -47,6 +47,9 @@ class CommentSerializer(serializers.ModelSerializer):
             )
         return value
     
+    def get_vote_state(self, obj):
+        return 0
+    
     def create(self, validated_data):
         
         parent_fn = validated_data.pop('parent_fn')
@@ -69,9 +72,22 @@ class CommentSerializer(serializers.ModelSerializer):
                 )
                 raise exceptions.NotFound(detail=error_message)
         return super().create(validated_data)
-
-    def get_vote_state(self, obj):
-        return 0
+    
+    def reddit_delete(self):
+        """
+        The comment is not really deleted. Just as in
+        reddit we overwrite the content and remove
+        the reference to the poster. Votes, voters, and
+        its creation date are preserved.
+        """
+        instance = self.instance
+        poster = getattr(instance, 'poster')
+        setattr(instance, 'poster', None)
+        setattr(instance, 'body', 'deleted')
+        setattr(instance, 'deleted', True)
+        instance.save()
+        
+        return instance
 
 class CommentPosterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,20 +125,4 @@ class CommentTreeSerializer(serializers.ModelSerializer):
             return vote.vote_type
         except:
             return 0
-        
-class DeleteCommentSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model=Comment
-        fields=('pk',)
-        
-    def update(self, instance, validated_data):
-        # Just set the fields to a generic deleted message
-        poster = getattr(instance, 'poster')
-        setattr(instance, 'poster', None)
-        setattr(instance, 'body', 'deleted')
-        setattr(instance, 'deleted', True)
-        instance.save()
-        
-        return instance
         

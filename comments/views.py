@@ -1,5 +1,6 @@
 from rest_framework.generics import (
-    ListCreateAPIView, ListAPIView, CreateAPIView, UpdateAPIView,
+    ListCreateAPIView, ListAPIView,
+    RetrieveUpdateDestroyAPIView, UpdateAPIView,
 )
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -9,9 +10,26 @@ from django.utils import timezone
 
 from .models import Comment
 from .serializers import (
-    CommentSerializer, CommentTreeSerializer, DeleteCommentSerializer,
+    CommentSerializer, CommentTreeSerializer,
 )
 from redditors.models import User
+
+class CommentDetailView(RetrieveUpdateDestroyAPIView):
+    """
+    For edits of comments, 'deletes', or re-fetching a single comment.
+    On delete the comment is not really deleted. Just as in
+    reddit we overwrite the content and remove
+    the reference to the poster. Votes, voters, and
+    its creation date are preserved.
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        serializer.reddit_delete()
+        return Response(serializer.data)
 
 class CommentListView(ListCreateAPIView):
     """
@@ -104,14 +122,3 @@ class PostCommentView(ListAPIView):
         context['children'] = children
         serializer = self.get_serializer_class()(root, context=context)
         return serializer.data
-        
-class DeleteCommentView(UpdateAPIView):
-    '''
-    The comment is not really deleted. Just as in
-    reddit we overwrite the content and remove
-    the reference to the poster. Votes, voters, and
-    it's creation date are preserved.
-    '''
-    serializer_class = DeleteCommentSerializer
-    queryset = Comment.objects.all()
-    
