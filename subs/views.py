@@ -88,7 +88,7 @@ class SubPostView(APIView):
         try:
             sub = Sub.objects.get(title=sub_title)
         except Sub.DoesNotExist:
-            data = {"sub": "That subreddit does not exist."}
+            data = {"subreddit": "That subreddit does not exist."}
             return Response(status=status.HTTP_404_NOT_FOUND,
                             data=data)
         
@@ -103,7 +103,7 @@ class SubPostView(APIView):
         # If it all has worked out then create the post
         post_data = {'title': request.data['title'],
                      'body': request.data['body'],
-                     'sub': sub,
+                     'subreddit': sub,
                      'poster': user}
         Post.objects.create(**post_data)
         

@@ -80,5 +80,5 @@ class SubPostListView(ListAPIView):
             except User.DoesNotExist:
                 return context
             context['post_user_pk'] = user.pk
-        return context    
+        return context
         
