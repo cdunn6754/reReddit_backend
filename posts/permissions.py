@@ -13,9 +13,6 @@ class IsPosterOrModOrAdminOrReadOnly(permissions.BasePermission):
         
         user = request.user
         post_sub_moderators = obj.subreddit.moderators.all()
-        
-        print(user)
-        print(obj.poster)
 
         is_poster = True if user == obj.poster else False
         mod = True if user in post_sub_moderators else False

@@ -88,17 +88,15 @@ class SubPostView(APIView):
         try:
             sub = Sub.objects.get(title=sub_title)
         except Sub.DoesNotExist:
-            data = {"subreddit": "That subreddit does not exist."}
-            return Response(status=status.HTTP_404_NOT_FOUND,
-                            data=data)
+            data = {"detail": "That subreddit does not exist."}
+            return Response(status=status.HTTP_404_NOT_FOUND, data=data)
         
         # Check on user membership
         membership = UserSubMembership.objects.filter(user=user, sub=sub)
         if not membership:
             data_message = ("You are not subscribed to this subreddit.")
             data = {"detail": data_message}
-            return Response(status=status.HTTP_403_FORBIDDEN,
-                            data=data)
+            return Response(status=status.HTTP_403_FORBIDDEN, data=data)
         
         # If it all has worked out then create the post
         post_data = {'title': request.data['title'],
