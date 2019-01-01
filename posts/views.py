@@ -3,13 +3,13 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 
 from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsPosterOrModOrAdminOrReadOnly
 from subs.models import Sub
 from redditors.models import User
-from utilities.reddit_orderby import ordering
 
 class PostListView(ListAPIView):
     queryset=Post.objects.all()
@@ -47,20 +47,34 @@ class SubPostListView(ListAPIView):
     """
     serializer_class = PostSerializer
     
+    def get_sort_function(self):
+        """
+        Given an api sort description (e.g. 'popular' or 'new') return
+        a key function that can be used in sort based on the acutal
+        model attributes nomenclature.
+        """
+        sort_functions = {
+            'popular': (lambda post: -post.upvotes),
+            'new': (lambda post: (timezone.now() - post.created))
+        }
+        api_sort_key = self.request.query_params.get('orderby', 'popular')
+        return sort_functions.get(api_sort_key, sort_functions['popular'])
+    
     def get_queryset(self):
         order_by = self.request.query_params.get('orderby', 'popular')
-        sub_title = self.kwargs.get('sub_title', None)
+        subreddit_title = self.kwargs.get('sub_title', None)
         
-        order_by = ordering.get(order_by, None)
-        
-        queryset = Post.objects.filter(subreddit__title=sub_title).order_by(order_by)
-        return queryset
+        queryset = Post.objects.filter(
+            subreddit__title=subreddit_title
+        )
+        # can't use order_by because upvotes isn't in the database
+        return sorted(queryset, key=self.get_sort_function())
     
     def get(self, request, *args, **kwargs):
-        # Be sure the sub exist before anything else
-        sub_title = self.kwargs.get('sub_title', None)
+        # Be sure the subreddit exist before anything else
+        subreddit_title = self.kwargs.get('sub_title', None)
         try:
-            Sub.objects.get(title=sub_title)
+            Sub.objects.get(title=subreddit_title)
         except Sub.DoesNotExist:
             return Response({'detail': "This subreddit does not exist"},
                             status=status.HTTP_404_NOT_FOUND)

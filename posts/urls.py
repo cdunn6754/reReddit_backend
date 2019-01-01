@@ -5,7 +5,7 @@ from . import views
 
 urlpatterns = [
     path('', views.PostListView.as_view(), name='post-list'),
-    re_path('(?P<pk>[0-9]+)/', views.PostDetailView.as_view(), name='post-detail'),
+    path('(<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
     path('subreddit-list/<slug:sub_title>/',
          views.SubPostListView.as_view(),
          name='sub-post-list'),
