@@ -29,22 +29,25 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
                   'poster_username', 'vote_state')
                     
                     
-    def validate(self, data):
-        """
-        Ensure that the user is a member of the sub
-        being posted to
-        """
-        user = None
-        request = self.context.get('request')
-        if request and hasattr(request, "user"):
-            user = request.user
-        
-        if not data['sub'] in user.subs.all():
-            raise serializers.ValidationError(
-                "You must be a member of the subreddit to post here."
-            )
-            
-        return data
+    # def validate(self, data):
+    #     """
+    #     Ensure that the user is a member of the sub
+    #     being posted to
+    #     """
+    #     user = None
+    #     request = self.context.get('request')
+    #     if request and hasattr(request, "user"):
+    #         user = request.user
+    #
+    #     for i in data:
+    #         print("dict: {}".format(i))
+    #     exit()
+    #     if data.get('sub') and not data['sub'] in user.subs.all():
+    #         raise serializers.ValidationError(
+    #             "You must be a member of the subreddit to post here."
+    #         )
+    #
+    #     return data
     
     def get_subreddit_title(self, obj):
         return obj.subreddit.title
