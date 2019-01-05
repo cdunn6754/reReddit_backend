@@ -35,6 +35,7 @@ urlpatterns = [
     path('subreddits/', include('subs.urls')),
     path('posts/', include('posts.urls')),
     path('comments/', include('comments.urls')),
-    path('vote/', include('votes.urls')),    
+    path('vote/', include('votes.urls')),
+    path('search/', include('search.urls')),
     path('api-auth/', include('rest_framework.urls')),
 ]
