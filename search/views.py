@@ -8,17 +8,17 @@ from redditors.models import User
 
 class SearchView(APIView):
     """
-    Very simple search view, takes a single POST parameter and
+    Very simple search view, takes a single GET query param and
     searches database for post, sureddit and users that contain
     that text. It then returns a serialized list of for each.
     In the case of Posts the pks are returned, for Subreddits and users
     the title and username are returned.
     """
-    http_method_names=['post']
+    http_method_names=['get']
     
-    def post(self, request, format=None, **kwargs):
+    def get(self, request, format=None, **kwargs):
 
-        search_term = request.data['search_term']
+        search_term = request.GET.get('q', '')
         
         posts = Post.objects.filter(title__icontains=search_term)
         users = User.objects.filter(username__icontains=search_term)
