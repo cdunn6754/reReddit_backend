@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from posts.models import Post
+from posts.serializers import PostSerializer
 from subs.models import Sub
+from subs.serializers import SubSerializer
 from redditors.models import User
+from redditors.serializers import UserSerializer
+
 
 class SearchView(APIView):
     """
@@ -24,14 +28,22 @@ class SearchView(APIView):
         users = User.objects.filter(username__icontains=search_term)
         subreddits = Sub.objects.filter(title__icontains=search_term)
         
-        post_pks = [post.pk for post in posts]
-        user_usernames = [user.username for user in users]
-        subreddit_titles = [subreddit.title for subreddit in subreddits]
+        post_pks = PostSerializer(posts, many=True)
+        user_usernames = UserSerializer(
+            users,
+            many=True,
+            context={'request': request}
+        )
+        subreddit_titles = SubSerializer(
+            subreddits,
+            many=True,
+            context={'request': request},
+        )
 
         data = {
-            'post_pks': post_pks,
-            'user_usernames': user_usernames,
-            'subreddit_titles': subreddit_titles,
+            'post_pks': post_pks.data,
+            'user_usernames': user_usernames.data,
+            'subreddit_titles': subreddit_titles.data,
         }
         
         return Response(data=data)
