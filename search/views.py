@@ -24,26 +24,25 @@ class SearchView(APIView):
 
         search_term = request.GET.get('q', '')
         
-        posts = Post.objects.filter(title__icontains=search_term)
-        users = User.objects.filter(username__icontains=search_term)
-        subreddits = Sub.objects.filter(title__icontains=search_term)
-        
-        post_pks = PostSerializer(posts, many=True)
-        user_usernames = UserSerializer(
-            users,
+        posts = PostSerializer(
+            Post.objects.filter(title__icontains=search_term),
+            many=True
+        )
+        users = UserSerializer(
+            User.objects.filter(username__icontains=search_term),
             many=True,
             context={'request': request}
         )
-        subreddit_titles = SubSerializer(
-            subreddits,
+        subreddits = SubSerializer(
+            Sub.objects.filter(title__icontains=search_term),
             many=True,
             context={'request': request},
         )
 
         data = {
-            'post_pks': post_pks.data,
-            'user_usernames': user_usernames.data,
-            'subreddit_titles': subreddit_titles.data,
+            'posts': posts.data,
+            'users': users.data,
+            'subreddits': subreddits.data,
         }
         
         return Response(data=data)

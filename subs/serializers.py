@@ -22,7 +22,7 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = Sub
-        fields = ('url', 'id', 'created', 'title', 'description',
+        fields = ('pk', 'created', 'title', 'description',
                   'moderators', 'members')
         extra_kwargs = {
             'url': {'lookup_field': 'title'}
