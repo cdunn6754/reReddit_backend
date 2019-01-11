@@ -36,6 +36,23 @@ class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     permission_classes = (IsModeratorOrAdminOrReadOnly,)
     
+    def get(self, request, *args, **kwargs):
+        subredditTitle = self.kwargs.get('title')
+        if subredditTitle == 'popular':
+            return self.getPopular(request, *args, **kwargs)
+        elif subredditTitle == 'home':
+            pass
+        return super().get(request, *args, **kwargs)
+        
+    def getPopular(self, request, *args, **kwargs):
+        popularity_limit = 1
+        popular_posts = [
+            post for post in Post.objects.all()
+            if post.upvotes >= popularity_limit
+        ]
+        return sorted(popular_posts, key=(lambda post: -post.upvotes))
+        
+    
 class SubSubscribeView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post']

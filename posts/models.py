@@ -3,8 +3,12 @@ from django.db import models
 from redditors.models import User
 from subs.models import Sub
 
+class PostVotesManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('votes')
 
 class Post(models.Model):
+    objects = PostVotesManager()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     
@@ -23,11 +27,9 @@ class Post(models.Model):
     @property
     def upvotes(self):
         """
-        Just add up the votes vote_types.
+        Just add up the prefetched votes vote_types.
         """
-        return self.votes.all().aggregate(models.Sum('vote_type')).get(
-            'vote_type__sum'
-        ) or 0
+        return sum([vote.vote_type for vote in self.votes.all()])
     
     
     def __str__(self):

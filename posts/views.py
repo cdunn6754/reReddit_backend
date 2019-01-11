@@ -67,7 +67,7 @@ class SubPostListView(ListAPIView):
         queryset = Post.objects.filter(
             subreddit__title=subreddit_title
         )
-        # can't use order_by because upvotes isn't in the database
+        # can't use Queryset.order_by because upvotes isn't in the database
         return sorted(queryset, key=self.get_sort_function())
     
     def get(self, request, *args, **kwargs):

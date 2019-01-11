@@ -49,5 +49,8 @@ class PostVote(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
+    def __str__(self):
+        return "Post: {}; Vote: {}".format(self.post, self.vote_type)
+    
     class Meta:
         unique_together = ('post', 'user')
