@@ -58,6 +58,7 @@ class SubPostListView(ListAPIView):
             'new': (lambda post: (timezone.now() - post.created))
         }
         api_sort_key = self.request.query_params.get('orderby', 'popular')
+        print(api_sort_key)
         return sort_functions.get(api_sort_key, sort_functions['popular'])
     
     def get_queryset(self):
@@ -71,14 +72,70 @@ class SubPostListView(ListAPIView):
         return sorted(queryset, key=self.get_sort_function())
     
     def get(self, request, *args, **kwargs):
-        # Be sure the subreddit exist before anything else
+        """
+        Custom get method to filter out requests for the posts of
+        `home` and `popular` as well as to perform a check that
+        otherwise the requested subreddit exists.
+        """
         subreddit_title = self.kwargs.get('sub_title', None)
-        try:
-            Sub.objects.get(title=subreddit_title)
-        except Sub.DoesNotExist:
-            return Response({'detail': "This subreddit does not exist"},
-                            status=status.HTTP_404_NOT_FOUND)
-        return self.list(request, *args, **kwargs)
+        if subreddit_title == 'popular':
+            return self.getPopular(request, *args, **kwargs)
+        elif subreddit_title == 'home':
+            return self.get_home(request, *args, **kwargs)
+        else:
+            try:
+                Sub.objects.get(title=subreddit_title)
+            except Sub.DoesNotExist:
+                return Response({'detail': "This subreddit does not exist"},
+                                status=status.HTTP_404_NOT_FOUND)
+            return self.list(request, *args, **kwargs)
+            
+    def get_home(self, request, *args, **kwargs):
+        """
+        Create a list of posts for a 'home' subreddit on the fly.
+        This will depend on whether the user is signed in or not.
+        If they are authenticated then only select posts from
+        thier subscribed subreddits. Otherwise just return a list
+        of all posts.
+        """
+        if not request.auth:
+            posts = Post.objects.all()
+            serializer = self.get_serializer(
+                Post.objects.all(),
+                many=True
+            )
+            return Response(serializer.data)
+            
+        user_subreddit_posts = Post.objects.filter(
+            subreddit__in=request.user.subs.all()
+        )
+        sorted_posts = sorted(user_subreddit_posts, key=self.get_sort_function())
+        
+        for post in sorted_posts:
+            pass#print(post.upvotes)
+        serializer = self.get_serializer(
+            sorted_posts,
+            many=True
+        )
+        return Response(serializer.data)
+        
+            
+    def getPopular(self, request, *args, **kwargs):
+        """
+        Create a list of posts popular posts on the fly, there is
+        no 'popular' subreddit.
+        TODO: create a celery task to make this happen behind the scenes
+        """
+        popularity_limit = 1
+        popular_posts = [
+            post for post in Post.objects.all()
+            if post.upvotes >= popularity_limit
+        ]
+        serializer = self.get_serializer(
+            sorted(popular_posts, key=self.get_sort_function()),
+            many=True
+        )
+        return Response(serializer.data)
     
     def get_serializer_context(self):
         """
