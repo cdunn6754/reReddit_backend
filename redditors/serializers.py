@@ -7,26 +7,19 @@ from subs.models import Sub
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     
-    subs = serializers.HyperlinkedRelatedField(
+    subs = serializers.PrimaryKeyRelatedField(
         many=True,
-        view_name='sub-detail',
         read_only=True,
-        lookup_field='title'
     )
     
-    moderated_subs = serializers.HyperlinkedRelatedField(
+    moderated_subs = serializers.PrimaryKeyRelatedField(
         many=True,
-        view_name='sub-detail',
         read_only=True,
-        lookup_field='title'
     )
     
     class Meta:
         model = User
-        fields = ('url', 'pk', 'karma', 'username', 'subs', 'moderated_subs',)
-        extra_kwargs = {
-            'url': {'lookup_field': 'username'}
-        }
+        fields = ('pk', 'karma', 'username', 'subs', 'moderated_subs',)
         
 class CreateUserSerializer(serializers.ModelSerializer):
     
