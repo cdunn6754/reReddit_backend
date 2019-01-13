@@ -24,6 +24,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     # It is more useful in the frontend to have the actual sub
     # information than just the hyperlinks
+    #TODO make a nested serializer!
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)

@@ -6,24 +6,17 @@ from redditors.models import User
 
 class SubSerializer(serializers.HyperlinkedModelSerializer):
     
-    moderators = serializers.HyperlinkedRelatedField(
+    moderators = serializers.PrimaryKeyRelatedField(
         many=True,
-        view_name='user-detail',
         read_only=True,
-        lookup_field='username'
     )
     
-    members = serializers.HyperlinkedRelatedField(
+    members = serializers.PrimaryKeyRelatedField(
         many=True,
-        view_name='user-detail',
         read_only=True,
-        lookup_field='username'
     )
     
     class Meta:
         model = Sub
         fields = ('pk', 'created', 'title', 'description',
                   'moderators', 'members')
-        extra_kwargs = {
-            'url': {'lookup_field': 'title'}
-        }
