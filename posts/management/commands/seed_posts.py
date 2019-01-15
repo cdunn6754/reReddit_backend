@@ -6,7 +6,7 @@ from redditors.models import User
 from subs.models import Sub
     
 class Command(BaseCommand):
-    help="Adds fake users to the database"
+    help="Adds fake comments to the database"
     
     def add_arguments(self, parser):
         parser.add_argument(
@@ -28,7 +28,7 @@ class Command(BaseCommand):
             # make sure to grab a user that has subreddit memberships
             poster = random.choice(users)
             while not len(poster.subs.all()):
-                poster = random.choice(posters)
+                poster = random.choice(users)
             # assume you can only post in subreddits you are a member of
             subreddit = random.choice(poster.subs.all())
             post = PostFactory.create(poster=poster, subreddit=subreddit)

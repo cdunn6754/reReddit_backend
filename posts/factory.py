@@ -14,7 +14,8 @@ class PostFactory(factory.django.DjangoModelFactory):
         Need some randomness in the body length that is difficult
         to provide in a class level variable. I.e. when random.randint
         is called in the aguements to factory.Faker() it is only
-        called once.
+        called once and is therefore a single number for all
+        posts created in the current command.
         """
         fake = faker.Faker()
         kwargs['body'] = fake.text(max_nb_chars = random.randint(0, 2000))
