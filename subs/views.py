@@ -34,6 +34,22 @@ class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SubSerializer
     lookup_field = 'title'
     
+    def get(self, request, *args, **kwargs):
+        """
+        Need to filter out requests to the pseudo-subreddits like
+        'popular', 'all' and 'home'.
+        """
+        subreddit_title = kwargs['title']
+        print(subreddit_title)
+        if subreddit_title.lower() in Sub.pseudo_subreddits:
+            data = {
+                'title': subreddit_title.title(),
+                'description': Sub.pseudo_subreddits.get(subreddit_title.lower()),
+            }
+            return Response(data)
+        else:
+            return super().get(request, *args, **kwargs)
+    
     permission_classes = (IsModeratorOrAdminOrReadOnly,)
     
 class SubSubscribeView(APIView):

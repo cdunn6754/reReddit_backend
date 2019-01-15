@@ -25,6 +25,6 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
         """
         Prevent title collisions with those of the psuedo subreddits
         """
-        if value.title in Sub.protected_subreddit_titles:
+        if value.lower in Sub.pseudo_subreddits:
             message = "The subreddit title '{}' is reserved".format(value)
             raise serializers.ValidationError(message)

@@ -58,7 +58,6 @@ class SubPostListView(ListAPIView):
             'new': (lambda post: (timezone.now() - post.created))
         }
         api_sort_key = self.request.query_params.get('orderby', 'popular')
-        print(api_sort_key)
         return sort_functions.get(api_sort_key, sort_functions['popular'])
     
     def get_queryset(self):
@@ -110,9 +109,6 @@ class SubPostListView(ListAPIView):
             subreddit__in=request.user.subs.all()
         )
         sorted_posts = sorted(user_subreddit_posts, key=self.get_sort_function())
-        
-        for post in sorted_posts:
-            pass#print(post.upvotes)
         serializer = self.get_serializer(
             sorted_posts,
             many=True

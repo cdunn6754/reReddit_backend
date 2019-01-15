@@ -2,12 +2,11 @@ from django.db import models
 from django.core.exceptions import  FieldError
 
 class Sub(models.Model):
-    protected_subreddit_titles = [
-        'Popular',
-        'New',
-        'Hot',
-        'Home',
-    ]
+    pseudo_subreddits = {
+        'popular': "The most popular posts from all over reReddit are collected here.",
+        'home': "A collection of posts from the subreddits you're interested in.",
+        'all': "The most active posts from all over reReddit.",
+    }
     
     created = models.DateTimeField(auto_now_add=True)
     title = models.SlugField(max_length=40, unique=True)
@@ -27,7 +26,7 @@ class Sub(models.Model):
         Prevent creation of subreddits that use names
         needed for the psuedo subreddits
         """
-        if self.title.title() in self.protected_subreddit_titles:
+        if self.title.lower() in self.pseudo_subreddits:
             message = "The subreddit title '{}' is reserved".format(self.title)
             raise FieldError(message)
         else:
