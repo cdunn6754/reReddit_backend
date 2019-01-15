@@ -152,7 +152,7 @@ class Populate:
         res.raise_for_status()
         token = res.json()['token']
         return token
-                
+            
     def add_subs(self, n_subs=0):
         print("\n\nAdding {} subreddits to database:".format(n_subs))
         print("----------------------------\n")
