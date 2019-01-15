@@ -77,10 +77,12 @@ class SubPostListView(ListAPIView):
         otherwise the requested subreddit exists.
         """
         subreddit_title = self.kwargs.get('sub_title', None)
-        if subreddit_title == 'popular':
-            return self.getPopular(request, *args, **kwargs)
-        elif subreddit_title == 'home':
+        if subreddit_title.lower() == 'popular':
+            return self.get_popular(request, *args, **kwargs)
+        elif subreddit_title.lower() == 'home':
             return self.get_home(request, *args, **kwargs)
+        elif subreddit_title.lower() == 'all':
+            return self.get_all(request, *args, **kwargs)
         else:
             try:
                 Sub.objects.get(title=subreddit_title)
@@ -116,7 +118,7 @@ class SubPostListView(ListAPIView):
         return Response(serializer.data)
         
             
-    def getPopular(self, request, *args, **kwargs):
+    def get_popular(self, request, *args, **kwargs):
         """
         Create a list of posts popular posts on the fly, there is
         no 'popular' subreddit.
@@ -132,6 +134,15 @@ class SubPostListView(ListAPIView):
             many=True
         )
         return Response(serializer.data)
+        
+    def get_all(self, request, *args, **kwargs):
+        """
+        Get the list of posts on the fly for the psuedo-subreddit 'all'.
+        NOTE: At this point I'm not really sure what the actual reddit
+        difference is between all and popular so I am just going to
+        use popular for now.
+        """
+        return self.get_popular(request, *args, **kwargs)
     
     def get_serializer_context(self):
         """

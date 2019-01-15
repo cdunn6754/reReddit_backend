@@ -4,7 +4,10 @@ from django.core.exceptions import  FieldError
 class Sub(models.Model):
     pseudo_subreddits = {
         'popular': "The most popular posts from all over reReddit are collected here.",
-        'home': "A collection of posts from the subreddits you're interested in.",
+        'home': (
+                    "A collection of posts from the subreddits "
+                    "you're interested in. Your own personal reReddit view."
+                ),
         'all': "The most active posts from all over reReddit.",
     }
     
