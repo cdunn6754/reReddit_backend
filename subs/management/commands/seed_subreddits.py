@@ -10,6 +10,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--number',
+            '-n',
             type=int,
             default=1,
             help='Number of subreddits to create'

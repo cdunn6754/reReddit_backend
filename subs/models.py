@@ -11,6 +11,8 @@ class Sub(models.Model):
     moderators = models.ManyToManyField(
         'redditors.User',
         related_name='moderated_subs')
+        
+    #ManyToManyField to User, related_name="members"
     
     def __str__(self):
         return "subReddit: {}".format(self.title)

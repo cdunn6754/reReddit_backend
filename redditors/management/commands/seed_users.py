@@ -11,7 +11,7 @@ class Command(BaseCommand):
             '--number',
             type=int,
             default=1,
-            help='Number of subreddits to create'
+            help='Number of users to create'
         )
         
     def handle(self,*args, **options):
