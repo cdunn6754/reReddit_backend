@@ -8,7 +8,12 @@ class PostVotesManager(models.Manager):
         return super().get_queryset().prefetch_related('votes')
 
 class Post(models.Model):
+    # This is the default because it is not very common to
+    # not need to calculate upvotes and that will result in
+    # a lot of db hits if we don't prefetch the votes
     objects = PostVotesManager()
+    
+    objects_no_votes = models.Manager()
     
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
