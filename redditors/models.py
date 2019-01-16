@@ -12,8 +12,11 @@ class User(AbstractUser):
         related_name='members',
         
     )
-    #moderated_subs ManyToManyField, related_name="moderated_subs"
-    #upvoted_comment ManyToManyField, related_name="voted_comments"
+    #ManyToManyField on Subreddit, related_name="moderated_subs"
+    #ManyToManyField for votes on Comment, related_name="voted_comments"
+    #ManyToManyField for votes on Post, related_name="voted_posts"
+    # Reverse FK for user votes on PostVote, related_name="post_votes"
+    # Reverse FK for user votes on CommentVote, related_name="comment_votes"
     
 class UserSubMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

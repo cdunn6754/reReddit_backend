@@ -125,6 +125,9 @@ class SubPostListView(ListAPIView):
         TODO: create a celery task to make this happen behind the scenes
         """
         popularity_limit = 1
+        # Can't use filter because upvotes not stored in database directly
+        # TODO figure out a way to annotate each post with sums from votes
+        # in O(1)
         popular_posts = [
             post for post in Post.objects.all()
             if post.upvotes >= popularity_limit
