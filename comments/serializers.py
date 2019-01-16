@@ -55,6 +55,7 @@ class CommentSerializer(serializers.ModelSerializer):
         parent_fn = validated_data.pop('parent_fn')
         parent_pk = parent_fn[3:]
         
+        # handle adding a post or comment parent depending on the parent_fn
         if int(parent_fn[1]) == 1:
             try:
                 validated_data['parent'] = Comment.objects.get(pk=parent_pk)
