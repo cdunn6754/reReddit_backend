@@ -113,3 +113,4 @@ dmypy.json
 deleter.py
 *~
 /static
+uwsgi_params
