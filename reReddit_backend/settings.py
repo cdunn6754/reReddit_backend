@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import reReddit_backend.local_settings as local
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,7 +25,7 @@ SECRET_KEY = 'ly*vj9!2wvecar7v-s+)tn)ipu3suvx)&a&hwa+cf6_c6$2yg+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = local.ALLOWED_HOSTS
+ALLOWED_HOSTS = []
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -173,6 +172,7 @@ STATIC_URL = '/static/'
 
 # Load local settings to overwrite the above
 try:
-    from local_settings import *
+    from reReddit_backend.local_settings import *
 except ImportError:
+    print("Local settings not imported")
     pass
