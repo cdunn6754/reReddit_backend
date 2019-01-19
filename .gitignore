@@ -112,5 +112,10 @@ dmypy.json
 ## My stuff
 deleter.py
 *~
+
+# Deployment
 /static
 uwsgi_params
+nginx.conf
+uwsgi.ini
+
