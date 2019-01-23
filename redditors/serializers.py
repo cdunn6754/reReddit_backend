@@ -21,7 +21,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         model = User
         fields = ('pk', 'karma', 'username', 'subs', 'moderated_subs',)
         
-class CreateUserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     
     username = serializers.SlugField(
         max_length=128,
@@ -73,6 +73,67 @@ class CreateUserSerializer(serializers.ModelSerializer):
         if validated_data.get('subs'):
             for sub in validated_data['subs']:
                 UserSubMembership.objects.get_or_create(user=user, sub=sub)
+        
+        return user
+        
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Currently only used to update user password and/or email.
+    No email verification is currently included, other than
+    a check for uniqueness. Whatever they change they must
+    provide their current password in addition to being
+    already otherwise authenticated.
+    """
+
+    current_password = serializers.CharField(
+        max_length=128, min_length=6, write_only=True, required=True,
+        help_text=_('Required, 6-128 characters')
+        )
+        
+    new_password = serializers.CharField(
+        max_length=128, min_length=6, write_only=True
+        )
+    
+    email = serializers.EmailField(
+        validators=[UniqueValidator(
+                    queryset=User.objects.all(),
+                    message="This email is already in use."
+                    )]
+    )
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'current_password', 'new_password']
+        lookup_field = 'username'
+        
+    def update(self, instance, validated_data):
+        try:
+            user = self.context.get('request').user
+        except:
+            message = _("You must be logged in to make profile changes.")
+            raise serializers.ValidationError(message)
+            
+        try:
+            current_password = validated_data.pop('current_password')
+        except KeyError:
+            message = _("Please enter your current password.")
+            raise serializers.ValidationError(message)
+            
+        if not user.check_password(current_password):
+            message = _("Please enter your current password")
+            raise serializers.ValidationError(message)
+        
+        if validated_data.get("new_password"):
+            new_password = validated_data.pop("new_password")
+            if new_password == current_password:
+                message = _("You new password can not be set the to the "
+                "same value as your current password")
+                raise serializers.ValidationError(message)
+            user.set_password(validated_data['new_password'])
+        if validated_data.get("email"):
+            user.email = validated_data['email']
+        print(validated_data.get("email"))
+        user.save()
         
         return user
     

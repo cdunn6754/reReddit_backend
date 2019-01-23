@@ -10,14 +10,27 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
 from .models import User
-from .serializers import UserSerializer, CreateUserSerializer
+from .serializers import (
+    UserSerializer,
+    UserCreateSerializer,
+    UserUpdateSerializer
+)
 from subs.serializers import SubSerializer
+from redditors.permissions import IsLoggedInOrReadOnly
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    
+class UserUpdateView(generics.UpdateAPIView):
+    serializer_class = UserUpdateSerializer
+    permission_classes = ( IsLoggedInOrReadOnly, )
+    queryset = User.objects.all()
+    lookup_field = "username"
+    
+    
+class UserDetailView(generics.RetrieveDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -34,11 +47,15 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         moderated_subs = SubSerializer(instance.moderated_subs.all(),
                                        many=True,
                                        context={'request':request})
-        return Response({**serializer.data, 'subs':subs.data, 'moderated_subs':moderated_subs.data})
+        return Response({
+            **serializer.data,
+            'subs': subs.data,
+            'moderated_subs': moderated_subs.data
+        })
     
-class CreateUserView(generics.CreateAPIView):
+class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = CreateUserSerializer
+    serializer_class = UserCreateSerializer
     
 class UserLogoutView(APIView):
         permission_classes = [IsAuthenticated]
