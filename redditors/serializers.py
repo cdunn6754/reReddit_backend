@@ -86,19 +86,32 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """
 
     current_password = serializers.CharField(
-        max_length=128, min_length=6, write_only=True, required=True,
+        max_length=128,
+        min_length=6,
+        write_only=True,
+        required=True,
         help_text=_('Required, 6-128 characters')
         )
         
     new_password = serializers.CharField(
-        max_length=128, min_length=6, write_only=True
-        )
+        max_length=128,
+        min_length=6,
+        write_only=True,
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+    )
     
     email = serializers.EmailField(
-        validators=[UniqueValidator(
-                    queryset=User.objects.all(),
-                    message="This email is already in use."
-                    )]
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Sorry! This email is already in use."
+            )
+        ],
+        required=False,
+        allow_null=True,
+        allow_blank=True,
     )
     
     class Meta:
@@ -126,10 +139,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if validated_data.get("new_password"):
             new_password = validated_data.pop("new_password")
             if new_password == current_password:
-                message = _("You new password can not be set the to the "
+                message = _("Your new password can not be set the to the "
                 "same value as your current password")
                 raise serializers.ValidationError(message)
-            user.set_password(validated_data['new_password'])
+            user.set_password(new_password)
+            
         if validated_data.get("email"):
             user.email = validated_data['email']
         print(validated_data.get("email"))

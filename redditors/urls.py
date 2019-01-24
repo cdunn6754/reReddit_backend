@@ -9,8 +9,7 @@ urlpatterns = [
     path('login/', views.UserLoginView.as_view(), name='user-login'),
     path('logout/', views.UserLogoutView.as_view(), name='user-logout'),
     path('create/', views.UserCreateView.as_view(), name='user-create'),
-    path('<slug:username>/update/', views.UserUpdateView.as_view(), name='user-detail'),
-    path('user/<slug:username>/', views.UserDetailView.as_view(), name='user-detail'),
+    path('<slug:username>/', views.UserDetailView.as_view(), name='user-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

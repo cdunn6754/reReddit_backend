@@ -22,18 +22,15 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-    
-class UserUpdateView(generics.UpdateAPIView):
-    serializer_class = UserUpdateSerializer
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
     permission_classes = ( IsLoggedInOrReadOnly, )
-    queryset = User.objects.all()
-    lookup_field = "username"
-    
-    
-class UserDetailView(generics.RetrieveDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
     lookup_field = 'username'
+    
+    def get_serializer_class(self):
+        if  self.request.method.lower() == "patch":
+            return UserUpdateSerializer
+        return UserSerializer
     
     # It is more useful in the frontend to have the actual sub
     # information than just the hyperlinks
@@ -70,23 +67,27 @@ class UserLogoutView(APIView):
 class UserLoginView(ObtainAuthToken):
         
         def post(self, request, *args, **kwargs):
-            serializer = self.serializer_class(data=request.data,
-                                               context={'request':request})
+            serializer = self.serializer_class(
+                data=request.data,
+                context={'request':request}
+            )
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
             subs = SubSerializer(user.subs.all(),
-                                 many=True,
-                                 context={'request':request})
-            moderated_subs = SubSerializer(user.moderated_subs.all(),
-                                           many=True,
-                                           context={'request':request})
+                many=True,
+                context={'request':request}
+            )
+            moderated_subs = SubSerializer(
+                user.moderated_subs.all(),
+                many=True,
+                context={'request':request}
+            )
             return Response({
                 'token': token.key,
                 'username': user.username,
                 'pk': user.pk,
                 'subs': subs.data,
                 'moderated_subs': moderated_subs.data
-
             })
     
