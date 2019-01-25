@@ -28,27 +28,13 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     lookup_field = 'username'
     
     def get_serializer_class(self):
+        """
+        Probably should be using a view set but for now
+        just pick a serializer based on the http method.
+        """
         if  self.request.method.lower() == "patch":
             return UserUpdateSerializer
         return UserSerializer
-    
-    # It is more useful in the frontend to have the actual sub
-    # information than just the hyperlinks
-    #TODO make a nested serializer!
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        subs = SubSerializer(instance.subs.all(),
-                             many=True,
-                             context={'request':request})
-        moderated_subs = SubSerializer(instance.moderated_subs.all(),
-                                       many=True,
-                                       context={'request':request})
-        return Response({
-            **serializer.data,
-            'subs': subs.data,
-            'moderated_subs': moderated_subs.data
-        })
     
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
