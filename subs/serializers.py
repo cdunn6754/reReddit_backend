@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from .models import Sub
 from redditors.models import User, UserSubMembership
 
-class SubSerializer(serializers.HyperlinkedModelSerializer):
+class SubSerializer(serializers.ModelSerializer):
     
     moderators = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -26,10 +26,11 @@ class SubSerializer(serializers.HyperlinkedModelSerializer):
         """
         Prevent title collisions with those of the psuedo subreddits
         """
-        if value.lower in Sub.pseudo_subreddits:
-            message = "The subreddit title '{}' is reserved".format(value)
+        if value.lower() in Sub.pseudo_subreddits:
+            message = "The subreddit title '{}' is reserved".format(value.title())
             raise serializers.ValidationError(message)
-
+        return value
+        
 class SubredditSubscribeSerializer(serializers.ModelSerializer):
     
     action = serializers.CharField(write_only=True)
@@ -51,6 +52,13 @@ class SubredditSubscribeSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         subreddit_title = self.context["subreddit_title"]
         
+        # make sure the user is authenticated
+        if not user.is_authenticated:
+            message=_(
+                "You must be logged in to make a subreddit subscription."
+            )
+            raise serializers.ValidationError(message)
+
         # make sure the subreddit exists
         try:
             sub = Sub.objects.get(title=subreddit_title)
@@ -59,6 +67,8 @@ class SubredditSubscribeSerializer(serializers.ModelSerializer):
                 "The subreddit '{}' does not exist.".format(subreddit_title)
             )
             raise serializers.ValidationError(message)
+            
+
 
         # try to subscribe
         if action == "sub":

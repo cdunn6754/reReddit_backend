@@ -16,6 +16,7 @@ from posts.models import Post
 class SubListView(generics.ListCreateAPIView):
     queryset=Sub.objects.all()
     serializer_class=SubSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     
     def perform_create(self, serializer):
         """
@@ -26,8 +27,6 @@ class SubListView(generics.ListCreateAPIView):
         new_sub = serializer.save()
         new_sub.moderators.add(user)
         UserSubMembership.objects.create(user=user, sub=new_sub)
-
-    permission_classes = (IsAuthenticatedOrReadOnly,)
     
     
 class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -42,7 +41,6 @@ class SubDetailView(generics.RetrieveUpdateDestroyAPIView):
         'popular', 'all' and 'home'.
         """
         subreddit_title = kwargs['title']
-        print(subreddit_title)
         if subreddit_title.lower() in Sub.pseudo_subreddits:
             data = {
                 'title': subreddit_title.title(),
