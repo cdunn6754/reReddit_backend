@@ -6,15 +6,52 @@ the following tools and frameworks:
 * [Django Rest Framework](https://www.django-rest-framework.org/)
 * [Django MPTT](https://django-mptt.readthedocs.io/en/latest/)
 * [Django Cors Headers](https://github.com/ottoyiu/django-cors-headers)
-* [PostgreSQL](https://www.postgresql.org/)
-* [NGINX](https://www.nginx.com/)
+* [PostgreSQL](https://www.postgresql.org/) (in deployment)
+* [NGINX](https://www.nginx.com/) (in deployment)
 
-I designed this product to mirror a limited set of the functionality of the
+I designed this project to mirror a limited set of the functionality of the
 real reddit api based on their documentation as a portfolio project and
 learning exercise. Aside from that this project is not associated with reddit.
 
 A live browseable demo version of the api is available:
 [rereddit.api.clintdunn.org](https://rereddit.api.clintdunn.org)
+
+The other part of this project is a single page react app:
+[reReddit_frontend](https://github.com/cdunn6754/reReddit_frontend)
+
+## Installation:
+
+It would be best to use a virtual environment from
+[virtualenv](https://virtualenv.pypa.io/en/latest/). I also use the
+[virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/).
+
+Assuming you have them installed you can now create a new virtual env,
+clone the project, and install the requirements. With Linux:
+
+```
+$ mkvirtualenv DRF
+(DRF) $ git clone https://github.com/cdunn6754/reReddit_backend.git ~/reReddit
+(DRF) $ cd ~/reReddit/reReddit_backend
+(DRF) $ pip install -r requirements.txt
+```
+
+The sqlite database is provided so that the site can be
+run with data off the bat. The provided
+default `settings.py` file will work with that database as is.
+
+You should be able to run the tests and  start the development server
+immediately after installing the dependencies
+
+```
+(venv) $ python manage.py test
+ ... Success hopefully
+(venv) $ python manage.py runserver
+```
+
+Then you can visit the browseable api in yor browser at the usual
+location, `localhost:8000`.
+
+__NOTE:__ I used Python version 3.6.3 and pip version 19.0.1.
 
 ## Documentation:
 
