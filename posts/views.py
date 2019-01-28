@@ -12,6 +12,11 @@ from subs.models import Sub
 from redditors.models import User
 
 class PostListView(ListAPIView):
+    """
+    Standard list view for posts
+    
+    query parameter: username
+    """
     queryset=Post.objects.all()
     serializer_class=PostSerializer
     
@@ -44,6 +49,8 @@ class SubPostListView(ListAPIView):
     For a particular sub return list of all posts.
     Posts can be ordered with optional GET parameter 'orderby'.
     By default they are ordered by most popular.
+    
+    query parameter: orderby, username
     """
     serializer_class = PostSerializer
     

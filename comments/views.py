@@ -52,6 +52,8 @@ class PostCommentView(ListAPIView):
     """
     For a particular post returns all comments, paginated and in a nested,
     hierarchichal fashion.
+    
+    query parameter: orderby, username
     """
     queryset = Comment.objects.all()
     serializer_class = CommentTreeSerializer

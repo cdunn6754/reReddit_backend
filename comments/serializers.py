@@ -1,6 +1,7 @@
 from rest_framework import serializers, exceptions
 from collections import defaultdict
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.utils.translation import gettext as _
 
 from .models import Comment
 from redditors.models import User
@@ -42,8 +43,8 @@ class CommentSerializer(serializers.ModelSerializer):
         # TODO get a regex
         if not (value.startswith("t") and value[2] == "_"):
             raise serializers.ValidationError(
-                "parent_fn must be a 'full name' "
-                "and begin with either 't1_' or 't2_'"
+                _(("parent_fn must be a 'full name' "
+                "and begin with either 't1_' or 't2_'"))
             )
         return value
     
@@ -60,16 +61,16 @@ class CommentSerializer(serializers.ModelSerializer):
             try:
                 validated_data['parent'] = Comment.objects.get(pk=parent_pk)
             except Comment.DoesNotExist:
-                error_message = ("The comment you are replying to is no "
-                    "longer available"
+                error_message = _(("The comment you are replying to is no "
+                    "longer available")
                 )
                 raise exceptions.NotFound(detail=error_message)
         elif int(parent_fn[1]) == 2:
             try:
                 validated_data['post'] = Post.objects.get(pk=parent_pk)
             except Post.DoesNotExist:
-                error_message = ("The post you are replying to is no "
-                    "longer available"
+                error_message = _(("The post you are replying to is no "
+                    "longer available")
                 )
                 raise exceptions.NotFound(detail=error_message)
         return super().create(validated_data)
