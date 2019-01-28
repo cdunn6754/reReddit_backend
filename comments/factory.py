@@ -11,5 +11,9 @@ class CommentFactory(factory.django.DjangoModelFactory):
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         fake = faker.Faker()
-        kwargs['body'] = fake.text(max_nb_chars=random.randint(10,2500))
+        comment_length = max(
+            round(random.betavariate(1.5, 3)*3000),
+            10
+        )
+        kwargs['body'] = fake.text(comment_length)
         return super()._create(model_class, *args, **kwargs)

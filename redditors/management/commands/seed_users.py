@@ -21,3 +21,4 @@ class Command(BaseCommand):
         self.stdout.write(out)
         for _ in range(n_users):
             user = UserFactory.create()
+            self.stdout.write("\t-- User: {} ...".format(user.username))

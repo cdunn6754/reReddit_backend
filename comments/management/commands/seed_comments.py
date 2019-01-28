@@ -14,7 +14,7 @@ class Command(BaseCommand):
             '--number_roots',
             '-r',
             type=int,
-            default=1,
+            default=0,
             help='Number of root comments to create'
         )
         
@@ -22,7 +22,7 @@ class Command(BaseCommand):
             '--number_children',
             '-c',
             type=int,
-            default=1,
+            default=0,
             help='Number of child comments to create'
         )
         

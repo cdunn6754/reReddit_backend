@@ -16,7 +16,11 @@ class SubredditFactory(factory.django.DjangoModelFactory):
         ])
     @classmethod
     def get_description(cls, fake):
-        description = fake.sentences(nb=random.randint(1,10))
+        desc_length = max(
+            round(random.betavariate(1.1, 3)*10),
+            1
+        )
+        description = fake.sentences(desc_length)
         return " ".join(description)
     
     @classmethod

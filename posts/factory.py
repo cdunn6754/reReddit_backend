@@ -18,7 +18,11 @@ class PostFactory(factory.django.DjangoModelFactory):
         posts created in the current command.
         """
         fake = faker.Faker()
-        kwargs['body'] = fake.text(max_nb_chars = random.randint(0, 2000))
+        body_length = max(
+            round(random.betavariate(1.2, 3)*2000),
+            10
+        )
+        kwargs['body'] = fake.text(body_length)
         return super()._create(model_class, *args, **kwargs)
         
     title = factory.Faker(

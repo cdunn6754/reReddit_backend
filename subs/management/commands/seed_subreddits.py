@@ -27,17 +27,20 @@ class Command(BaseCommand):
         n_subreddits = options['number']
         n_members = options['members']
         
+        users = list(User.objects.all())
+        
         out = "Creating {} new subreddits with {} members each".format(
             n_subreddits,
             n_members,
         )
         self.stdout.write(out)
         for _ in range(n_subreddits):
-            users = random.sample(list(User.objects.all()), n_members)
+            subreddit_users = random.sample(users, n_members)
             # just create the sub with a single moderator
             subreddit = SubredditFactory.create(moderators=(users[0],))
-            for user in users:
+            for user in subreddit_users:
                 membership = UserSubredditMembershipFactory.create(
                     user=user,
                     sub=subreddit
                 )
+            self.stdout.write("\t-- Title: {} ...".format(subreddit.title))
