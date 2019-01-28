@@ -3,6 +3,8 @@ from django.db import transaction
 from rest_framework.test import APITestCase, APIRequestFactory
 from rest_framework import status
 from django.urls import reverse
+from django.core.management import call_command
+from io import StringIO
 
 from subs.models import Sub
 from redditors.models import User, UserSubMembership
@@ -21,7 +23,6 @@ class SubredditTest(APITestCase):
             email="test2@gmail.com",
             password="testpassword"
         )
-        
         
         self.sub_data = {
             "title": "test_subreddit_1",
@@ -173,3 +174,36 @@ class SubredditSubscriptionTests(APITestCase):
         response = self.client.post(self.subscribe_url, self.sub_data)
         self.assertEqual(UserSubMembership.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+        
+class SeedSubredditCommandTests(TestCase):
+    def setUp(self):
+        # need some users
+        out = StringIO()
+        call_command('seed_users', number=5, stdout=out)
+            
+    def test_seed_subreddit(self):
+        """
+        the seed_subreddits command creates subreddits, given a number parameter
+        """
+        out = StringIO()
+        call_command('seed_subreddits', number=10, stdout=out)
+        expected_out = ("Creating 10 new subreddits with 1 members each")
+        self.assertIn(expected_out, out.getvalue())
+        self.assertEquals(Sub.objects.count(), 10)
+            
+    def test_seed_subreddit_many_users(self):
+        """
+        the command can also add a variable number of users to each subreddit
+        upon creation.
+        """
+        out = StringIO()
+        call_command('seed_subreddits', number=10, members=4, stdout=out)
+        expected_out = ("Creating 10 new subreddits with 4 members each")
+        self.assertIn(expected_out, out.getvalue())
+        self.assertEquals(Sub.objects.count(), 10)
+        self.assertEquals(len(Sub.objects.first().members.all()), 4)
+                
+        
+        
