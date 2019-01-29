@@ -97,13 +97,6 @@ the logical option must be selected or an error will result. E.g. if you
 try to subscribe to a subreddit you are already a member a 400 error will
 be returned
   * action: must be either `sub` or `unsub`
-
-* __POST `/subs/{title}/post/` (auth)__
-Allows authenticated users to create posts to the subreddit. You must
-already be a member of the subreddit, i.e. subscribed, to create a post.
-NOTE: In the future this view may be moved to the `/posts/` branch.
-  * title: the title of the new post
-  * body: the body of the new post
   
 ### `/posts/`
 
@@ -116,6 +109,9 @@ voted will be indicated in the response.
 * __GET `/posts/{pk}/`__
 Retrieve the details of a single post.
 
+* __DELETE `/posts/{pk}/`__
+The owner or a moderator of the subreddit can delete a post.
+
 * __GET `/posts/subreddit-list/{subreddit title}/`__
 This endpoint allows a consumer to fetch all of the posts made on a
 particular subreddit. There are two optional query parameters. The first
@@ -124,6 +120,12 @@ is `orderby`, this can be used to specify the order in which the posts should
 be returned
   * username: optional
   * orderby: optional, must be either `popular` or `new`
+  
+ * __POST `/posts/create/{subreddit_title}/` (auth)__
+Allows authenticated users to create posts to the subreddit. You must
+already be a member of the subreddit, i.e. subscribed, to create a post.
+  * title: the title of the new post
+  * body: the body of the new post
 
 ### `/comments/`
 
