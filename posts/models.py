@@ -21,8 +21,17 @@ class Post(models.Model):
     title = models.CharField(max_length=150, unique=True)
     body = models.TextField()
     
-    subreddit = models.ForeignKey(Sub, on_delete=models.CASCADE)
-    poster = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    subreddit = models.ForeignKey(
+        Sub,
+        on_delete=models.CASCADE,
+        related_name="posts"
+    )
+    poster = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="posts"
+    )
     
     voters = models.ManyToManyField(
         User,

@@ -6,7 +6,7 @@ from .models import Post
 from redditors.models import User
 from subs.models import Sub
 
-class PostSerializer(serializers.HyperlinkedModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
     
     poster = serializers.PrimaryKeyRelatedField(
         read_only=True,
