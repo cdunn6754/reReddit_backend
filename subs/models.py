@@ -20,6 +20,7 @@ class Sub(models.Model):
         related_name='moderated_subs')
         
     #ManyToManyField to User, related_name="members"
+    # backward FK posts from Post
     
     def __str__(self):
         return "subReddit: {}".format(self.title)

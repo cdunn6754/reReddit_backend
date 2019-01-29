@@ -5,80 +5,126 @@ from rest_framework.test import APIClient
 
 from redditors.models import User, UserSubMembership
 from subs.models import Sub
+from posts.models import Post
 
-# class PostTests(APITestCase):
-#     def setUp(self):
-#         client = APIClient()
-#         # We will need to set up a subReddit for the posts and
-#         # it's hyperlink
-#         self.sub = Sub.objects.create(
-#             title='test Sub'
-#         )
-#         res = client.get(reverse('sub-list'))
-#         self.sub_hyperlink = res.data[0]['url']
-#
-#         # We will need a user created
-#         self.username = 'test_username'
-#         self.email = 'test@gmail.com'
-#         self.password = 'test_password'
-#         # create user with an api request
-#         create_user_data = {
-#             'username': self.username,
-#             'email': self.email,
-#             'password': self.password,
-#             }
-#         create_user_url = reverse('user-create')
-#         client.post(create_user_url, create_user_data)
-#         self.login_test_user()
-#
-#     def login_test_user(self):
-#         client = APIClient()
-#         login_user_data = {
-#             'username': self.username,
-#             'password': self.password
-#             }
-#         login_user_url = reverse('user-login')
-#         login_res = client.post(login_user_url, login_user_data)
-#         self.token = login_res.data["token"]
-#
-#     def test_create_post_no_member(self):
-#         """
-#         Try to create a post to a sub to which the user is not subsribed
-#         """
-#         c = APIClient()
-#         c.credentials(HTTP_AUTHORIZATION="Token {}".format(self.token))
-#         create_post_url = reverse('post-list')
-#         create_post_data = {
-#             'title' : 'test post title',
-#             'body' : 'test post body',
-#             'sub': self.sub_hyperlink
-#         }
-#         res = c.post(create_post_url,create_post_data)
-#         assert(res.status_code == 400)
-#         expected_message = "You must be a member of the subreddit to post here."
-#         assert(expected_message in str(res.data))
-#
-#     def test_create_post_member(self):
-#         """
-#         Try to create a post to a sub to which the user is subscribed
-#         """
-#         # prepare client with user token header (is already logged in)
-#         c = APIClient()
-#         c.credentials(HTTP_AUTHORIZATION="Token {}".format(self.token))
-#
-#         # sign user up as member of sub
-#         user = User.objects.get(username="test_username")
-#         UserSubMembership.objects.create(user=user, sub=self.sub)
-#
-#         # again submit POST request to create a post on subreddit
-#         create_post_url = reverse('post-list')
-#         create_post_data = {
-#             'title' : 'test post title',
-#             'body' : 'test post body',
-#             'sub': self.sub_hyperlink
-#         }
-#         res = c.post(create_post_url,create_post_data)
-#         assert (res.status_code == 201)
+class PostRequestTests(APITestCase):
+    """
+    Testing request for making and deleting posts
+    """
+    def setUp(self):
+        # need a subreddit
+        self.subreddit = Sub.objects.create(
+            title='test_subreddit'
+        )
+
+        # and a user
+        self.user_data = {
+            'username': 'test_username',
+            'email': 'test@gmail.com',
+            'password': 'test_password',
+            }
+        self.user = User.objects.create(**self.user_data)
+        self.user_data_2 = {
+            'username': 'test_username_2',
+            'email': 'test2@gmail.com',
+            'password': 'test_password',
+            }
+        self.user2 = User.objects.create(**self.user_data_2)
         
+
+        self.client.force_login(self.user)
+        
+        self.create_post_url = reverse(
+            'create-post',
+            kwargs={ "sub_title": self.subreddit.title}
+        )
+        self.detail_post_url = lambda pk: reverse(
+            'post-detail',
+            kwargs={ "pk": pk}
+        )
+        self.post_data = {
+            "title": "test post title",
+            "body": "Test post body",
+        }
+        
+    def test_create_post_non_member(self):
+        """
+        Can't create a post to a subreddit without a subreddit membership
+        """
+        response = self.client.post(self.create_post_url, self.post_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Post.objects.count(), 0)
+        self.assertEqual(self.subreddit.posts.count(), 0)
+        self.assertEqual(self.user.posts.count(), 0)
+        self.assertContains(
+            response,
+            "You must be a member of the subreddit to post here.",
+            status_code=400
+        )
+        
+    def test_create_post_member(self):
+        """
+        A member of a subreddit can create a post there
+        """
+        UserSubMembership.objects.create(
+            user=self.user,
+            sub=self.subreddit
+        )
+        response = self.client.post(self.create_post_url, self.post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(self.subreddit.posts.count(), 1)
+        self.assertEqual(self.user.posts.count(), 1)
+        self.assertNotIn(response.data["pk"], self.user.posts.all())
+        self.assertNotIn(response.data["pk"], self.subreddit.posts.all())
+        self.assertEqual(response.data["subreddit"], self.subreddit.pk)
+        self.assertEqual(response.data["subreddit_title"], self.subreddit.title)
+        self.assertEqual(response.data["poster"], self.user.pk)
+        self.assertEqual(response.data["poster_username"], self.user.username)
+        
+    def test_post_delete_poster(self):
+        """
+        The creator of a post can delete it
+        """
+        UserSubMembership.objects.create(
+            user=self.user,
+            sub=self.subreddit
+        )
+        post = Post.objects.create(
+            subreddit=self.subreddit,
+            poster=self.user,
+            **self.post_data
+        )
+        
+        self.assertEqual(Post.objects.count(), 1)
+        response = self.client.delete(self.detail_post_url(post.pk))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Post.objects.count(), 0)
+        
+    def test_post_delete_non_poster(self):
+        """
+        A user who did not create the post can't delete it
+        unless they are a moderator of the subreddit
+        """
+        UserSubMembership.objects.create(
+            user=self.user2,
+            sub=self.subreddit
+        )
+        post = Post.objects.create(
+            subreddit=self.subreddit,
+            poster=self.user2,
+            **self.post_data
+        )
+        
+        self.assertEqual(Post.objects.count(), 1)
+        response = self.client.delete(self.detail_post_url(post.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Post.objects.count(), 1)
+        
+        # make user a moderator
+        self.subreddit.moderators.add(self.user)
+        response = self.client.delete(self.detail_post_url(post.pk))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Post.objects.count(), 0)
         
         

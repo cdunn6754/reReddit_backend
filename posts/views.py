@@ -1,4 +1,8 @@
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+    CreateAPIView
+)
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -39,10 +43,35 @@ class PostListView(ListAPIView):
         return context
     
 class PostDetailView(RetrieveUpdateDestroyAPIView):
-    queryset=Post.objects.all()
+    queryset = Post.objects.all()
     serializer_class=PostSerializer
-    
     permission_classes = (IsPosterOrModOrAdminOrReadOnly,)
+    
+class PostToSubredditView(CreateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = ( IsAuthenticatedOrReadOnly, )
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Need to grab the subreddit from the url and the authenticated
+        user from the request and add them to the serializer data
+        NOTE: I wonder if there is a better way to do this, copying data
+        is a bummer but dont want these to be read_only
+        """
+        subreddit = Sub.objects.get(title=kwargs["sub_title"])
+        user = self.request.user
+        data = request.data.copy()
+        data["subreddit"] = subreddit.pk
+        data["poster"] = user.pk
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
     
 class SubPostListView(ListAPIView):
     """

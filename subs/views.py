@@ -79,37 +79,3 @@ class SubredditSubscribeView(generics.CreateAPIView):
             if serializer.validated_data["action"] == "unsub":
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-class SubPostView(APIView):
-    permission_classes = (IsAuthenticated,)
-    http_method_names=['post']
-
-    def post(self, request, format=None, **kwargs):
-        '''
-        Allow users to post to this subreddit. Users must be
-        authenticated and need to be a member of the subreddit to post.
-        '''
-        user = request.user
-        sub_title = kwargs['title']
-
-        try:
-            sub = Sub.objects.get(title=sub_title)
-        except Sub.DoesNotExist:
-            data = {"detail": "That subreddit does not exist."}
-            return Response(status=status.HTTP_404_NOT_FOUND, data=data)
-        
-        # Check on user membership
-        membership = UserSubMembership.objects.filter(user=user, sub=sub)
-        if not membership:
-            data_message = ("You are not subscribed to this subreddit.")
-            data = {"detail": data_message}
-            return Response(status=status.HTTP_403_FORBIDDEN, data=data)
-        
-        # If it all has worked out then create the post
-        post_data = {'title': request.data['title'],
-                     'body': request.data['body'],
-                     'subreddit': sub,
-                     'poster': user}
-        Post.objects.create(**post_data)
-        
-        return Response(status=status.HTTP_201_CREATED)
