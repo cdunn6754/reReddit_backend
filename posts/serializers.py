@@ -37,9 +37,11 @@ class PostSerializer(serializers.ModelSerializer):
         poster = data.get("poster")
         subreddit = data.get("subreddit")
         
-        if not subreddit in poster.subs.all():
-            message = _("You must be a member of the subreddit to post here.")
-            raise serializers.ValidationError(message)
+        # Only relevant when doing a creation, not an update
+        if poster and subreddit:
+            if not subreddit in poster.subs.all():
+                message = _("You must be a member of the subreddit to post here.")
+                raise serializers.ValidationError(message)
     
         return data
     

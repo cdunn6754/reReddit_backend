@@ -9,7 +9,7 @@ from posts.models import Post
 
 class PostRequestTests(APITestCase):
     """
-    Testing request for making and deleting posts
+    Testing request for making, updating and deleting posts
     """
     def setUp(self):
         # need a subreddit
@@ -81,6 +81,57 @@ class PostRequestTests(APITestCase):
         self.assertEqual(response.data["subreddit_title"], self.subreddit.title)
         self.assertEqual(response.data["poster"], self.user.pk)
         self.assertEqual(response.data["poster_username"], self.user.username)
+        
+    def test_post_update_poster(self):
+        """
+        The creator of a post can update it
+        """
+        UserSubMembership.objects.create(
+            user=self.user,
+            sub=self.subreddit
+        )
+        post = Post.objects.create(
+            subreddit=self.subreddit,
+            poster=self.user,
+            **self.post_data
+        )
+        
+        self.assertEqual(Post.objects.count(), 1)
+        update_data = {
+         "body": "new body"
+        }
+        response = self.client.patch(self.detail_post_url(post.pk), update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(response.data["body"], update_data["body"])
+        
+    def test_post_update_non_poster(self):
+        """
+        The if you didn't create the post you can't update
+        unless your a moderator
+        """
+        UserSubMembership.objects.create(
+            user=self.user2,
+            sub=self.subreddit
+        )
+        post = Post.objects.create(
+            subreddit=self.subreddit,
+            poster=self.user2,
+            **self.post_data
+        )
+        update_data = {
+         "body": "new body"
+        }
+        response = self.client.patch(self.detail_post_url(post.pk), update_data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # make user a moderator
+        self.subreddit.moderators.add(self.user)
+        response = self.client.patch(self.detail_post_url(post.pk), update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(response.data["body"], update_data["body"])        
+        
         
     def test_post_delete_poster(self):
         """
