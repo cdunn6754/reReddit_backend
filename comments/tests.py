@@ -162,7 +162,7 @@ class CommentViewTests(APITestCase):
         self.assertEqual(Comment.objects.count(), 2)
         self.assertEqual(response.data["body"], self.comment_body)
         self.assertEqual(response.data["parent"], root_comment.pk)
-        self.assertIsNone(response.data["post"])
+        self.assertContains(response, self.post.title, status_code=201)
         self.assertFalse(response.data["deleted"])
         
         self.assertIn(
@@ -200,11 +200,14 @@ class CommentViewTests(APITestCase):
         and the link to and from the parent comment remains
         """
         # first create the parent comment via client
+        rc_body = "root comment body"
         data = {
             "parent_fn": "t2_{}".format(self.post.pk),
-            "body": "root comment body"
+            "body": rc_body
         }
         root_response = self.client.post(self.comment_list_url, data)
+        self.assertContains(root_response, rc_body, status_code=201)
+        self.assertEqual(Comment.objects.count(), 1)
         root_comment = Comment.objects.get(
             pk=int(root_response.data["pk"])
         )
@@ -214,15 +217,32 @@ class CommentViewTests(APITestCase):
             "body": self.comment_body
         }
         response = self.client.post(self.comment_list_url, data)
+        self.assertContains(response, self.comment_body, status_code=201)
+        self.assertEqual(Comment.objects.count(), 2)
         comment = Comment.objects.get(
             pk=int(response.data["pk"])
         )
         # Create a grandchild comment
+        gc_body = "grandchild body"
         data = {
             "parent_fn": "t1_{}".format(comment.pk),
-            "body": self.comment_body
+            "body": gc_body
         }
         gc_response = self.client.post(self.comment_list_url, data)
+        self.assertContains(gc_response, gc_body, status_code=201)
+        self.assertEqual(Comment.objects.count(), 3)
+        self.assertEqual(
+            gc_response.data["post"],
+            response.data["post"]
+        )
+        self.assertEqual(
+            gc_response.data["post"],
+            root_response.data["post"]
+        )
+        self.assertEqual(
+            gc_response.data["post"],
+            self.post.title
+        )
         gc_comment = Comment.objects.get(
             pk=int(gc_response.data["pk"])
         )
@@ -236,3 +256,36 @@ class CommentViewTests(APITestCase):
         self.assertTrue(response.data["deleted"])
         self.assertFalse(gc_comment.deleted)
         self.assertFalse(root_comment.deleted)
+        
+        
+class SeedCommentsSubredditCommandTests(TestCase):
+    def setUp(self):
+        # need to get users, subreddits and posts first
+        out = StringIO()
+        call_command('seed_users', number=5, stdout=out)
+        call_command('seed_subreddits', number=5, stdout=out)
+        call_command('seed_posts', number=10, stdout=out)
+    
+    def test_seed_root_comments(self):
+        """
+        Can create a user specified number of root comments
+        """
+        out = StringIO()
+        call_command('seed_comments', number_roots=10, stdout=out)
+        expected_out = "Creating 10 new root comments"
+        self.assertIn(expected_out, out.getvalue())
+        self.assertEqual(Comment.objects.count(), 10)
+
+    def test_seed_child_comments(self):
+        """
+        Can create a user specified number of child comments
+        """
+        out1 = StringIO()
+        call_command('seed_comments', number_roots=5, stdout=out1)
+        out = StringIO()
+        call_command('seed_comments', number_children=10, stdout=out)
+        expected_out = "Creating 10 new child comments"
+        self.assertIn(expected_out, out.getvalue())
+        self.assertEqual(Comment.objects.count(), 15)
+        for comment in Comment.objects.all():
+            self.assertIsNotNone(comment.post)

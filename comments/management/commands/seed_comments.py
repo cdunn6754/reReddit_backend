@@ -49,5 +49,10 @@ class Command(BaseCommand):
             for _ in range(n_children):
                 poster = random.choice(users)
                 parent = random.choice(comments)
-                comment = CommentFactory.create(poster=poster, parent=parent)
+                post = Post.objects.get(pk=parent.post_id)
+                comment = CommentFactory.create(
+                    poster=poster,
+                    parent=parent,
+                    post=post
+                )
                 self.stdout.write("\t-- Body: {} ...".format(comment.body[0:10]))
