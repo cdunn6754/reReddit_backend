@@ -5,7 +5,7 @@ from rest_framework.validators  import UniqueValidator
 from .models import User, UserSubMembership
 from subs.models import Sub
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     
     subs = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -151,8 +151,34 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         
         return user
     
-    
-    
+
+from comments.serializers import CommentSerializer
+from posts.serializers import PostSerializer
+class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Provide the detail of a user, not for login but for profile pages
+    """
+    subs = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+    )
+    moderated_subs = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+    )
+    comments = CommentSerializer(many=True, read_only=True)
+    posts = PostSerializer(many=True, read_only=True)
+    class Meta:
+        model = User
+        fields = (
+            'pk',
+            'username',
+            'subs',
+            'moderated_subs',
+            'comments',
+            'posts',
+            'karma'
+        )
     
     
     

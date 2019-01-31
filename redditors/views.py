@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import (
     AllowAny,
-    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -13,7 +13,8 @@ from .models import User
 from .serializers import (
     UserSerializer,
     UserCreateSerializer,
-    UserUpdateSerializer
+    UserUpdateSerializer,
+    UserProfileSerializer
 )
 from subs.serializers import SubSerializer
 from redditors.permissions import IsLoggedInOrReadOnly
@@ -21,6 +22,7 @@ from redditors.permissions import IsLoggedInOrReadOnly
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     
 class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
@@ -35,13 +37,18 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         if  self.request.method.lower() == "patch":
             return UserUpdateSerializer
         return UserSerializer
+class UserProfileDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    lookup_field = 'username'
+    serializer_class = UserProfileSerializer
     
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
     
 class UserLogoutView(APIView):
-        permission_classes = [IsAuthenticated]
+        permission_classes = (IsAuthenticatedOrReadOnly,)
 
         def post(self, request, *args, **kwargs):
             try:

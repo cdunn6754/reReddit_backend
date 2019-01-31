@@ -10,6 +10,11 @@ urlpatterns = [
     path('logout/', views.UserLogoutView.as_view(), name='user-logout'),
     path('create/', views.UserCreateView.as_view(), name='user-create'),
     path('<slug:username>/', views.UserDetailView.as_view(), name='user-detail'),
+    path(
+        'profile/<slug:username>/',
+        views.UserProfileDetailView.as_view(),
+        name='user-profile'
+    )
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

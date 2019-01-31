@@ -39,6 +39,8 @@ class Post(models.Model):
         related_name='voted_posts',
     )
     
+    # Reverse FK to Comment related_name="comments"
+    
     @property
     def upvotes(self):
         """

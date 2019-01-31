@@ -191,7 +191,7 @@ class SeedSubredditCommandTests(TestCase):
         call_command('seed_subreddits', number=10, stdout=out)
         expected_out = ("Creating 10 new subreddits with 1 members each")
         self.assertIn(expected_out, out.getvalue())
-        self.assertEquals(Sub.objects.count(), 10)
+        self.assertEqual(Sub.objects.count(), 10)
             
     def test_seed_subreddit_many_users(self):
         """
@@ -202,8 +202,8 @@ class SeedSubredditCommandTests(TestCase):
         call_command('seed_subreddits', number=10, members=4, stdout=out)
         expected_out = ("Creating 10 new subreddits with 4 members each")
         self.assertIn(expected_out, out.getvalue())
-        self.assertEquals(Sub.objects.count(), 10)
-        self.assertEquals(len(Sub.objects.first().members.all()), 4)
+        self.assertEqual(Sub.objects.count(), 10)
+        self.assertEqual(len(Sub.objects.first().members.all()), 4)
                 
         
         

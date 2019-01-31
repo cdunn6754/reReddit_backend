@@ -17,6 +17,8 @@ class User(AbstractUser):
     #ManyToManyField for votes on Post, related_name="voted_posts"
     # Reverse FK for user votes on PostVote, related_name="post_votes"
     # Reverse FK for user votes on CommentVote, related_name="comment_votes"
+    # Reverse FK to Comment related_name="comments"
+    # Reverse FK to Post related_name="posts"
     
 class UserSubMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
