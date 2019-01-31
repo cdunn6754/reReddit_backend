@@ -7,8 +7,18 @@ from posts.models import Post
 class Comment(MPTTModel):
     created = models.DateTimeField(auto_now_add=True)
     
-    poster = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
+    poster = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="comments"
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="comments"
+    )
     
     body = models.TextField()
     deleted = models.BooleanField(default=False)
