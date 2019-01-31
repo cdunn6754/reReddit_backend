@@ -34,6 +34,10 @@ class PostRequestTests(APITestCase):
 
         self.client.force_login(self.user)
         
+        self.create_post_url_f = lambda title: reverse(
+            'create-post',
+            kwargs={ "sub_title": title}
+        )
         self.create_post_url = reverse(
             'create-post',
             kwargs={ "sub_title": self.subreddit.title}
@@ -81,6 +85,19 @@ class PostRequestTests(APITestCase):
         self.assertEqual(response.data["subreddit_title"], self.subreddit.title)
         self.assertEqual(response.data["poster"], self.user.pk)
         self.assertEqual(response.data["poster_username"], self.user.username)
+        
+    def test_post_creation_psuedo_subreddit(self):
+        """
+        Should not be able to post to All, Popular, or Home subreddits
+        """
+        pseudo_names = ["Home", "home", "hOme", "Popular", "All"]
+        for title in pseudo_names:
+            response = self.client.post(
+                self.create_post_url_f(title),
+                self.post_data
+            )
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(Post.objects.count(), 0)
         
     def test_post_update_poster(self):
         """
@@ -130,7 +147,7 @@ class PostRequestTests(APITestCase):
         response = self.client.patch(self.detail_post_url(post.pk), update_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Post.objects.count(), 1)
-        self.assertEqual(response.data["body"], update_data["body"])        
+        self.assertEqual(response.data["body"], update_data["body"])
         
         
     def test_post_delete_poster(self):

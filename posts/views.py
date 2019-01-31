@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from .models import Post
 from .serializers import PostSerializer
@@ -58,7 +59,18 @@ class PostToSubredditView(CreateAPIView):
         NOTE: I wonder if there is a better way to do this, copying data
         is a bummer but dont want these to be read_only
         """
-        subreddit = Sub.objects.get(title=kwargs["sub_title"])
+        subreddit_title = kwargs["sub_title"]
+        if subreddit_title.lower() in Sub.pseudo_subreddits.keys():
+            message = _((
+                "You can't create a post to the "
+                "'{}' subreddit".format(subreddit_title)
+            ))
+            return Response(
+                {"detail": message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            subreddit = Sub.objects.get(title=subreddit_title)
         user = self.request.user
         data = request.data.copy()
         data["subreddit"] = subreddit.pk

@@ -39,6 +39,13 @@ class PostSerializer(serializers.ModelSerializer):
         
         # Only relevant when doing a creation, not an update
         if poster and subreddit:
+            # make sure they aren't trying to create a post to a pseudo subreddit
+            if subreddit.title.lower() in Sub.pseudo_subreddits.keys():
+                message = _(
+                    ("You can't create a post to the "
+                    "'{}' subreddit.".format(subreddit.title))
+                )
+                raise serializers.ValidationError(message)
             if not subreddit in poster.subs.all():
                 message = _("You must be a member of the subreddit to post here.")
                 raise serializers.ValidationError(message)
