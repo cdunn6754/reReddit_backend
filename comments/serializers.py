@@ -25,12 +25,13 @@ class CommentSerializer(serializers.ModelSerializer):
         write_only=True
     )
     vote_state = serializers.SerializerMethodField()
+    created = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
         fields = (
             'post', 'poster', 'parent', 'body', 'upvotes',
-            'parent_fn', 'pk', 'vote_state', 'deleted',
+            'parent_fn', 'pk', 'vote_state', 'deleted', 'created',
         )
     
     def validate_parent_fn(self, value):
@@ -50,6 +51,9 @@ class CommentSerializer(serializers.ModelSerializer):
     
     def get_vote_state(self, obj):
         return 0
+        
+    def get_created(self, obj):
+        return naturaltime(obj.created)
     
     def create(self, validated_data):
         
