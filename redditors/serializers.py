@@ -166,8 +166,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
-    comments = CommentSerializer(many=True, read_only=True)
-    posts = PostSerializer(many=True, read_only=True)
+    comments = serializers.SerializerMethodField()
+    posts = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
         fields = (
@@ -179,6 +180,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'posts',
             'karma'
         )
-    
+        
+    def get_comments(self, obj):
+        serializer = CommentSerializer(
+            obj.comments.all().order_by("-created"),
+            many=True
+        )
+        return serializer.data
+    def get_posts(self, obj):
+        serializer = PostSerializer(
+            obj.posts.all().order_by("-created"),
+            many=True
+        )
+        return serializer.data
     
     
