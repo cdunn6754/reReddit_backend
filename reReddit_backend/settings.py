@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'mptt',
     
     'subs',
-    'redditors',
+    'redditors.apps.RedditorsConfig',
     'posts',
     'comments',
     'votes',
