@@ -42,6 +42,8 @@ class UserProfileTest(APITestCase):
         self.assertContains(response, self.post_data["body"])
         self.assertNotContains(response, self.user_data["password"])
         self.assertNotContains(response, self.user_data["email"])
+        self.assertContains(response, "cake_day")
+        self.assertContains(response, "karma")
         
         
         

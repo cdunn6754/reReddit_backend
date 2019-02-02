@@ -156,7 +156,8 @@ from comments.serializers import CommentSerializer
 from posts.serializers import PostSerializer
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Provide the detail of a user, not for login but for profile pages
+    Provide the detail of a user, not for login but for profile pages.
+    All information provied here will be publicly accessable.
     """
     subs = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -165,6 +166,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     moderated_subs = serializers.PrimaryKeyRelatedField(
         many=True,
         read_only=True,
+    )
+    cake_day = serializers.DateTimeField(
+        source='date_joined'
     )
     comments = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
@@ -178,7 +182,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'moderated_subs',
             'comments',
             'posts',
-            'karma'
+            'karma',
+            'cake_day'
         )
         
     def get_comments(self, obj):
