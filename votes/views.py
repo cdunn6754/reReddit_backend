@@ -11,24 +11,27 @@ class CreateVoteView(CreateAPIView):
     comment_serializer_class = CommentVoteSerializer
     post_serializer_class = PostVoteSerializer
     permission_classes = (IsAuthenticated,)
-    
-    def get_serializer_class(self):
+            
+    def get_serializer(self, *args, **kwargs):
         """
         Depending on the full_name of the voted upon item
         (i.e. whether it's a comment or a post), use the right
         serializer
+        
+        Also update the request data
         """
-        fn = self.request.data.get('item_fn')
+        data = kwargs["data"].copy()
+        fn = data["item_fn"]
         assert (fn and (fn[0:3] == "t1_" or fn[0:3] =='t2_')), (
             "item_fn is required and must be a 'full name', "
             "i.e. it must begin with either 't1_' or 't2_'"
         )
         if fn[0:3] == "t1_":
-            self.request.data['comment'] = fn[3:]
-            return self.comment_serializer_class
+            data["comment"] = fn[3:]
+            return self.comment_serializer_class(data=data)
         elif fn[0:3] == "t2_":
-            self.request.data['post'] = fn[3:]
-            return self.post_serializer_class
+            data["post"] = fn[3:]
+            return self.post_serializer_class(data=data)
 
     
     def perform_create(self, serializer):
