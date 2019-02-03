@@ -83,6 +83,17 @@ There is currently no email verification implemented.
   * new_password: optional
   * current_password
 
+* __GET `/profile/{username}/` (auth optional)__
+Unlike the other user resources this one is not concerned with the information
+of the authenticated user. Instead this view can be used to get the profile,
+i.e. the publicly available, information about any other user. In
+reReddit_fontend this is used to populate the user profile view.
+Unauthenticated requests will be accepted and return profile data.
+If the request is from an authenticated user the posts and comments will contain
+an accurate `vote_state` field that indicates the authenticated users previous
+votes on the comment/post. The ordering of posts and comments is reverse
+chronological.
+
 ### `/subs/`
 * __GET `/subs/`__
 Retrieve a list of all subreddits.
@@ -100,11 +111,11 @@ be returned
   
 ### `/posts/`
 
-* __GET `/posts/`__
-Retrieve a list of all posts. The optional query parameter `username` is
-used to lookup the vote status of each post. The status of the users previous
-voted will be indicated in the response.
-  * username
+* __GET `/posts/ (auth optional)`__
+Retrieve a list of all posts. Authentication is optional in the same sense
+as for the `/users/profile/{users}` field above. Authenticated responses
+will contain a non-zero `vote_state` field if the authed user has voted on the
+post previously.
 
 * __GET `/posts/{pk}/`__
 Retrieve the details of a single post.
@@ -112,13 +123,13 @@ Retrieve the details of a single post.
 * __DELETE `/posts/{pk}/`__
 The owner or a moderator of the subreddit can delete a post.
 
-* __GET `/posts/subreddit-list/{subreddit title}/`__
+* __GET `/posts/subreddit-list/{subreddit title}/` (auth optional)__
 This endpoint allows a consumer to fetch all of the posts made on a
-particular subreddit. There are two optional query parameters. The first
-is `username`, for its use see the `/posts/{pk}/` documentation. The second
+particular subreddit. The optional query parameter
 is `orderby`, this can be used to specify the order in which the posts should
-be returned
-  * username: optional
+be returned.
+Authentication is optional in and is used to provide information for the
+`vote_state` field in the response, see `/users/profile/{users}`.
   * orderby: optional, must be either `popular` or `new`
   
  * __POST `/posts/create/{subreddit_title}/` (auth)__
@@ -158,12 +169,13 @@ database but will overwrite the body and poster fields. The comments are
 preserved in this way to facilitate reddit-like comment display trees in the
 front end.
 
-* __GET `/comments/post/{post pk}`__
+* __GET `/comments/post/{post pk}` (auth optional)__
 Retrieves all comments related to a particular post. The comments are returned
 in a nested fashion with each primary entry being a root post comment. The
-`username` and `orderby` optional query parameters can be used as described
+`orderby` optional query parameter can be used as described
 in the `/posts/` section above.
-  * username: optional
+Authentication is optional in and is used to provide information for the
+`vote_state` field in the response, see `/users/profile/{users}`.
   * orderby: optional, must be either `popular` or `new`
   
 ### `/search/`
