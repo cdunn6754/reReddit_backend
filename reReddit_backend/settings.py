@@ -37,6 +37,13 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+BLEACH_ALLOWED_TAGS = [
+    'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li',
+    'ol', 'strong', 'ul', 'p', 'h1', 'h2', 'br', 's', 'u'
+]
+BLEACH_ALLOWED_ATTRIBUTES = [
+
+]
 AUTH_USER_MODEL = 'redditors.User'
 
 # Application definition

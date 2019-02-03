@@ -1,4 +1,5 @@
 from django.db import models
+from django_bleach.models import BleachField
 
 from redditors.models import User
 from subs.models import Sub
@@ -18,8 +19,8 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     
-    title = models.CharField(max_length=150, unique=True)
-    body = models.TextField()
+    title = BleachField(max_length=150)
+    body = BleachField()
     
     subreddit = models.ForeignKey(
         Sub,

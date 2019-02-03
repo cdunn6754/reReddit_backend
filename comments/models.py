@@ -1,5 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from django_bleach.models import BleachField
 
 from redditors.models import User
 from posts.models import Post
@@ -20,7 +21,7 @@ class Comment(MPTTModel):
         related_name="comments"
     )
     
-    body = models.TextField()
+    body = BleachField()
     deleted = models.BooleanField(default=False)
 
     @property
