@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'mptt',
+    'django_bleach',
     
     'subs',
     'redditors.apps.RedditorsConfig',
