@@ -87,23 +87,6 @@ class PostCommentView(ListAPIView):
         queryset = sorted(queryset,key=self.get_sort_function())
         return queryset
     
-    def get_serializer_context(self):
-        """
-        It will really speed up some vote lookups in the
-        serializer if we can turn a username into a user_pk at this point.
-        This is only relevant if the consumer provides a get param 'username'
-        """
-        context = super().get_serializer_context()
-        username = self.request.query_params.get('username')
-        if username:
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                return context
-            context['comment_user_pk'] = user.pk
-        return context
-        
-    
     def list(self, request, *args, **kwargs):
         root_comments = self.filter_queryset(self.get_queryset())
         comment_trees = []

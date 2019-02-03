@@ -7,6 +7,7 @@ from .models import Comment
 from redditors.models import User
 from redditors.serializers import UserSerializer
 from posts.models import Post
+from votes.models import CommentVote
 
 class CommentSerializer(serializers.ModelSerializer):
     
@@ -139,9 +140,16 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         return naturaltime(obj.created)
     
     def get_vote_state(self, obj):
-        try:
-            vote = obj.votes.all().get(user_id=self.context['comment_user_pk'])
-            return vote.vote_type
-        except:
-            return 0
+        """
+        If a user is authenticated, look up whether they have voted on this
+        comment before.
+        """
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            try:
+                vote = obj.votes.all().get(user_id=request.user.pk)
+                return vote.vote_type
+            except CommentVote.DoesNotExist:
+                pass
+        return 0
         
