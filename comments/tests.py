@@ -191,7 +191,7 @@ class CommentViewTests(APITestCase):
         self.assertEqual(Comment.objects.count(), 1)
         self.assertTrue(response.data["deleted"])
         self.assertIsNone(response.data["poster"])
-        self.assertIs(response.data["body"], "deleted")
+        self.assertEqual(response.data["body"], "deleted")
         self.assertEqual(response.data["post"], self.post.title)
 
     def test_child_comment_deletion(self):
