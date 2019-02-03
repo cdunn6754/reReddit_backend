@@ -189,13 +189,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_comments(self, obj):
         serializer = CommentSerializer(
             obj.comments.all().order_by("-created"),
-            many=True
+            many=True,
+            context=self.context
         )
         return serializer.data
     def get_posts(self, obj):
         serializer = PostSerializer(
             obj.posts.all().order_by("-created"),
-            many=True
+            many=True,
+            context=self.context
         )
         return serializer.data
     
