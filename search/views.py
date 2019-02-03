@@ -23,20 +23,25 @@ class SearchView(APIView):
     def get(self, request, format=None, **kwargs):
 
         search_term = request.GET.get('q', '')
-        
+    
+        serializer_context = {
+            'request': request
+        }
+            
         posts = PostSerializer(
             Post.objects.filter(title__icontains=search_term),
-            many=True
+            many=True,
+            context=serializer_context
         )
         users = UserSerializer(
             User.objects.filter(username__icontains=search_term),
             many=True,
-            context={'request': request}
+            context=serializer_context
         )
         subreddits = SubSerializer(
             Sub.objects.filter(title__icontains=search_term),
             many=True,
-            context={'request': request},
+            context=serializer_context
         )
 
         data = {

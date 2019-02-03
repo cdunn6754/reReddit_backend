@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from .models import Post
 from redditors.models import User
 from subs.models import Sub
+from votes.models import PostVote
 
 class PostSerializer(serializers.ModelSerializer):
     
@@ -65,9 +66,16 @@ class PostSerializer(serializers.ModelSerializer):
         return naturaltime(obj.updated)
 
     def get_vote_state(self, obj):
-        try:
-            vote = obj.votes.all().get(user_id=self.context['post_user_pk'])
-            return vote.vote_type
-        except:
-            return 0
+        """
+        If a user is authenticated, look up whether they have voted on this post
+        before.
+        """
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            try:
+                vote = obj.votes.all().get(user_id=request.user.pk)
+                return vote.vote_type
+            except PostVote.DoesNotExist:
+                pass
+        return 0
         
