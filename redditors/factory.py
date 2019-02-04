@@ -10,6 +10,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         kwargs['karma'] = random.randint(0,10000)
+        django_get_or_create = ('username',)        
         return super()._create(model_class, *args, **kwargs)
         
     username = factory.Faker('user_name')

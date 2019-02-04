@@ -28,5 +28,6 @@ class VoteSeedCommandBase(BaseCommand):
             '-r',
             type=self.ratio_checker,
             default=0.75,
-            help='Ratio of upvotes to downvotes to be randomly assigned'
+            help=('Ratio of upvotes to downvotes to be randomly assigned, '
+                'defaults to 0.75')
         )

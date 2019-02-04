@@ -32,4 +32,4 @@ class Command(BaseCommand):
             # assume you can only post in subreddits you are a member of
             subreddit = random.choice(poster.subs.all())
             post = PostFactory.create(poster=poster, subreddit=subreddit)
-            self.stdout.write("-- Title: {} ...".format(post.title[0:10]))
+            self.stdout.write("\t-- Title: {} ...".format(post.title[0:10]))
