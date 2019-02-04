@@ -38,6 +38,9 @@ $ mkvirtualenv DRF
 The sqlite database is provided so that the site can be
 run with data off the bat. The provided
 default `settings.py` file will work with that database as is.
+A super user has been added to the database with the following credentials
+* username: `reredditUser`
+* password: `reredditUserPassword`
 
 #### Populating a new database:
 You don't need to use this database but the website is going to be pretty boring
@@ -51,7 +54,7 @@ $ python manage seed_database
 This command calls several other commands included within each app of the project to create
 users, subreddits, posts, comments, and comment/post votes. You can customize the database seeding
 buy altering the seed_database.py file found in the core app or by calling the individual management
-commands separately (see each app's managment folder). 
+commands separately (see each app's managment folder).
 
 #### Running the server
 Whatever you decide regarding a databse you should be able to run the tests and start the development server
