@@ -1,5 +1,7 @@
 from django.db import models
 from django_bleach.models import BleachField
+from django.core.validators import MaxLengthValidator
+from django.utils.translation import gettext as _
 
 from redditors.models import User
 from subs.models import Sub
@@ -19,7 +21,12 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     
-    title = BleachField(max_length=150)
+    title = BleachField(
+        validators=[MaxLengthValidator(
+            150,
+            message=_("The title can only be 150 characters in length.")
+        )]
+    )
     body = BleachField(blank=True)
     
     subreddit = models.ForeignKey(

@@ -2,10 +2,72 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.test import APIClient
+from django.core.exceptions import ValidationError
 
 from redditors.models import User, UserSubMembership
 from subs.models import Sub
 from posts.models import Post
+
+class PostTest(APITestCase):
+    """
+    General post creation without a request
+    """
+    def setUp(self):
+        # need a subreddit
+        self.subreddit = Sub.objects.create(
+            title='test_subreddit'
+        )
+
+        # and a user
+        self.user_data = {
+            'username': 'test_username',
+            'email': 'test@gmail.com',
+            'password': 'test_password',
+            }
+        self.user = User.objects.create(**self.user_data)
+        self.user_data_2 = {
+            'username': 'test_username_2',
+            'email': 'test2@gmail.com',
+            'password': 'test_password',
+            }
+        self.user2 = User.objects.create(**self.user_data_2)
+        
+        self.post_data = {
+            "title": "test post title",
+            "body": "Test post body",
+        }
+        
+    def test_post_creation(self):
+        """
+        Can create a post with a subreddit and a user
+        """
+        post = Post.objects.create(
+            subreddit=self.subreddit,
+            poster=self.user,
+            **self.post_data
+        )
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertIs(post.poster, self.user)
+        self.assertIs(post.subreddit, self.subreddit)
+        self.assertEqual(post.title, self.post_data["title"])
+        self.assertEqual(post.body, self.post_data["body"])
+        
+    def test_post_creation_long_title(self):
+        """
+        The maximum title length is 150 chars
+        """
+        error_message = "The title can only be 150 characters in length."
+        with self.assertRaises(ValidationError):
+            post = Post(
+                subreddit=self.subreddit,
+                poster=self.user,
+                title = 'a'*151,
+                body = "test body"
+            )
+            post.full_clean()
+        
+    
+    
 
 class PostRequestTests(APITestCase):
     """
