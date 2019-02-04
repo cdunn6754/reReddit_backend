@@ -20,7 +20,7 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     
     title = BleachField(max_length=150)
-    body = BleachField()
+    body = BleachField(blank=True)
     
     subreddit = models.ForeignKey(
         Sub,
