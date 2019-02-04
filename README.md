@@ -34,13 +34,28 @@ $ mkvirtualenv DRF
 (DRF) $ cd ~/reReddit/reReddit_backend
 (DRF) $ pip install -r requirements.txt
 ```
-
+#### Using the provided database:
 The sqlite database is provided so that the site can be
 run with data off the bat. The provided
 default `settings.py` file will work with that database as is.
 
-You should be able to run the tests and  start the development server
-immediately after installing the dependencies
+#### Populating a new database:
+You don't need to use this database but the website is going to be pretty boring
+without a significant amount of data.
+If you would prefer not to use the provided db.sqlite database you can populate
+your own with the custom management command that was written to populate the database
+in the first place. Once you have set up and migrated your new database just run
+```
+$ python manage seed_database
+```
+This command calls several other commands included within each app of the project to create
+users, subreddits, posts, comments, and comment/post votes. You can customize the database seeding
+buy altering the seed_database.py file found in the core app or by calling the individual management
+commands separately (see each app's managment folder). 
+
+#### Running the server
+Whatever you decide regarding a databse you should be able to run the tests and start the development server
+after installing the dependencies
 
 ```
 (venv) $ python manage.py test
