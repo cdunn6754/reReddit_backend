@@ -110,8 +110,9 @@ venv.bak/
 dmypy.json
 
 ## My stuff
-deleter.py
 *~
+db.sqlite3
+
 
 # Deployment
 /static
