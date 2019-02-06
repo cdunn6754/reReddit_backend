@@ -133,7 +133,7 @@ class CommentViewTests(APITestCase):
         response = self.client.post(self.comment_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Comment.objects.count(), 1)
-        self.assertEqual(response.data["post"], self.post.title)
+        self.assertEqual(response.data["post"]["pk"], self.post.pk)
         self.assertIsNone(response.data["parent"])
         self.assertEqual(response.data["body"], self.comment_body)
         self.assertFalse(response.data["deleted"])
@@ -192,7 +192,7 @@ class CommentViewTests(APITestCase):
         self.assertTrue(response.data["deleted"])
         self.assertIsNone(response.data["poster"])
         self.assertEqual(response.data["body"], "deleted")
-        self.assertEqual(response.data["post"], self.post.title)
+        self.assertEqual(response.data["post"]["pk"], self.post.pk)
 
     def test_child_comment_deletion(self):
         """
@@ -240,8 +240,8 @@ class CommentViewTests(APITestCase):
             root_response.data["post"]
         )
         self.assertEqual(
-            gc_response.data["post"],
-            self.post.title
+            gc_response.data["post"]["pk"],
+            self.post.pk
         )
         gc_comment = Comment.objects.get(
             pk=int(gc_response.data["pk"])

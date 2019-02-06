@@ -7,12 +7,12 @@ from .models import Comment
 from redditors.models import User
 from redditors.serializers import UserSerializer
 from posts.models import Post
+from posts.serializers import PostSerializer
 from votes.models import CommentVote
 
 class CommentSerializer(serializers.ModelSerializer):
     
-    post = serializers.SlugRelatedField(
-        slug_field='title',
+    post = PostSerializer(
         read_only=True
     )
     poster = serializers.PrimaryKeyRelatedField(
