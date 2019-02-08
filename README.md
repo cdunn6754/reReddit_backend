@@ -35,9 +35,15 @@ $ mkvirtualenv DRF
 (DRF) $ pip install -r requirements.txt
 ```
 #### Using the provided database:
-The sqlite database is provided so that the site can be
-run with data off the bat. The provided
-default `settings.py` file will work with that database as is.
+A dump from the default sqlite database is provided so that the site can be
+run with data off the bat.
+The default settings in `settings.py` were left to assume a sqlite database
+would be used.
+To set up the sqlite database with the data from the dump file on Linux run:
+```
+$ sqlite3 db.sqlite3 < db_dump.sql
+```
+After running that command to import the data you should be good to go.
 A super user has been added to the database with the following credentials
 * username: `reredditUser`
 * password: `reredditUserPassword`
