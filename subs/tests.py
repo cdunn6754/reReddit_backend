@@ -204,6 +204,21 @@ class SeedSubredditCommandTests(TestCase):
         self.assertIn(expected_out, out.getvalue())
         self.assertEqual(Sub.objects.count(), 10)
         self.assertEqual(len(Sub.objects.first().members.all()), 4)
+        
+    def test_number_of_mods(self):
+        """
+        For the time being the subreddits created automatically should have
+        only a single moderator. And that moderator will be a member
+        """
+        out = StringIO()
+        call_command('seed_subreddits', number=10, members=4, stdout=out)
+        for subreddit in Sub.objects.all():
+            self.assertEqual(subreddit.moderators.all().count(), 1)
+            self.assertIn(
+            subreddit.moderators.all().first(),
+            subreddit.members.all()
+            )
+        
                 
         
         

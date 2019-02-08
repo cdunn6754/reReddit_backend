@@ -37,7 +37,7 @@ class Command(BaseCommand):
         for _ in range(n_subreddits):
             subreddit_users = random.sample(users, n_members)
             # just create the sub with a single moderator
-            subreddit = SubredditFactory.create(moderators=(users[0],))
+            subreddit = SubredditFactory.create(moderators=(subreddit_users[0],))
             for user in subreddit_users:
                 membership = UserSubredditMembershipFactory.create(
                     user=user,
