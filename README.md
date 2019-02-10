@@ -72,7 +72,7 @@ after installing the dependencies
 (venv) $ python manage.py runserver
 ```
 
-Then you can visit the browseable api in yor browser at the usual
+Then you can visit the browseable api in your browser at the usual
 location, `localhost:8000`.
 
 __NOTE:__ I used Python version 3.6.3 and pip version 19.0.1.
