@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsPosterOrModOrAdminOrReadOnly
+from .pagination import PostPagination
 from subs.models import Sub
 from redditors.models import User
 
