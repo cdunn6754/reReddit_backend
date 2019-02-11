@@ -368,3 +368,58 @@ class PostRetrieveRequestTests(APITestCase):
         )
         self.assertNotContains(response, "user_1_post_title_")
         self.assertNotContains(response, "user_2_post_title_")
+        
+    def test_pseudo_popular_subreddit_retrieval(self):
+        """
+        Should only return the popular posts, at this point that
+        means posts with more than on upvote.
+        """
+        # pick half of the 20 posts we made in setUp to become popular
+        evens = range(0,10,2)
+        for post in Post.objects.all():
+            if int(post.title[-1]) in evens:
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user,
+                    vote_type=1
+                )
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user2,
+                    vote_type=1
+                )
+        
+        response = self.client.get(self.sub_post_list_url_f("Popular"))
+        self.assertContains(response, "user_1_post_title_", count=5)
+        self.assertContains(response, "user_2_post_title_", count=5)
+        self.assertNotContains(response, "user_1_post_title_1")
+        self.assertNotContains(response, "user_2_post_title_3")
+        
+    def test_pseudo_all_subreddit_retrieval(self):
+        """
+        Should only return the all posts, at this point that
+        means posts with more than on upvote.
+        NOTE: at this point the all subreddit is identical to the
+        popular subreddit so this test is also identical
+        """
+        # pick half of the 20 posts we made in setUp to become popular
+        evens = range(1,11,2)
+        for post in Post.objects.all():
+            if int(post.title[-1]) in evens:
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user,
+                    vote_type=1
+                )
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user2,
+                    vote_type=1
+                )
+        
+        response = self.client.get(self.sub_post_list_url_f("All"))
+        self.assertContains(response, "user_1_post_title_", count=5)
+        self.assertContains(response, "user_2_post_title_", count=5)
+        self.assertNotContains(response, "user_1_post_title_0")
+        self.assertNotContains(response, "user_2_post_title_2")
+        

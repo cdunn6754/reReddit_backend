@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status, exceptions
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.db.models import Sum
 
 from .models import Post
 from .serializers import PostSerializer
@@ -153,78 +154,23 @@ class SubPostListView(ListAPIView):
         # return all posts if unauthed
         return Post.objects.all()
     
-
-    
-    # def get(self, request, *args, **kwargs):
-    #     """
-    #     Custom get method to filter out requests for the posts of
-    #     `home` and `popular` as well as to perform a check that
-    #     otherwise the requested subreddit exists.
-    #     """
-    #     subreddit_title = self.kwargs.get('sub_title', None)
-    #     if subreddit_title.lower() == 'popular':
-    #         return self.get_popular(request, *args, **kwargs)
-    #     elif subreddit_title.lower() == 'home':
-    #         return self.get_home(request, *args, **kwargs)
-    #     elif subreddit_title.lower() == 'all':
-    #         return self.get_all(request, *args, **kwargs)
-    #     else:
-    #
-    #         return self.list(request, *args, **kwargs)
-            
-    def get_home(self, request, *args, **kwargs):
+    def get_popular_queryset(self):
         """
-        Create a list of posts for a 'home' subreddit on the fly.
-        This will depend on whether the user is signed in or not.
-        If they are authenticated then only select posts from
-        thier subscribed subreddits. Otherwise just return a list
-        of all posts.
+        Create a list of posts popular posts on the fly that serves as the
+        'Popular' psuedo subreddit.
         """
-        if not request.auth:
-            posts = Post.objects.all()
-            serializer = self.get_serializer(
-                Post.objects.all(),
-                many=True
-            )
-            return Response(serializer.data)
-            
-        user_subreddit_posts = Post.objects.filter(
-            subreddit__in=request.user.subs.all()
-        )
-        sorted_posts = sorted(user_subreddit_posts, key=self.get_sort_function())
-        serializer = self.get_serializer(
-            sorted_posts,
-            many=True
-        )
-        return Response(serializer.data)
-        
-            
-    def get_popular(self, request, *args, **kwargs):
-        """
-        Create a list of posts popular posts on the fly, there is
-        no 'popular' subreddit.
-        TODO: create a celery task to make this happen behind the scenes
-        """
+        # Arbitrary popularity limit
         popularity_limit = 1
-        # Can't use filter because upvotes not stored in database directly
-        # TODO figure out a way to annotate each post with sums from votes
-        # in O(1)
-        popular_posts = [
-            post for post in Post.objects.all()
-            if post.upvotes >= popularity_limit
-        ]
-        serializer = self.get_serializer(
-            sorted(popular_posts, key=self.get_sort_function()),
-            many=True
-        )
-        return Response(serializer.data)
         
-    def get_all(self, request, *args, **kwargs):
+        return Post.objects.annotate(
+            custom_upvotes=Sum("votes__vote_type")
+        ).filter(custom_upvotes__gt=popularity_limit)
+    
+    def get_all_queryset(self):
         """
-        Get the list of posts on the fly for the psuedo-subreddit 'all'.
+        Get the list of posts on the fly for the psuedo-subreddit 'All'.
         NOTE: At this point I'm not really sure what the actual reddit
         difference is between all and popular so I am just going to
         use popular for now.
         """
-        return self.get_popular(request, *args, **kwargs)
-        
+        return self.get_popular_queryset()
