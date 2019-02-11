@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from redditors.models import User, UserSubMembership
 from subs.models import Sub
 from posts.models import Post
+from votes.models import PostVote
 
 class PostTest(APITestCase):
     """
@@ -66,9 +67,6 @@ class PostTest(APITestCase):
             )
             post.full_clean()
         
-    
-    
-
 class PostRequestTests(APITestCase):
     """
     Testing request for making, updating and deleting posts
@@ -112,6 +110,8 @@ class PostRequestTests(APITestCase):
             "title": "test post title",
             "body": "Test post body",
         }
+        
+    
         
     def test_create_post_non_member(self):
         """
@@ -258,3 +258,113 @@ class PostRequestTests(APITestCase):
         self.assertEqual(Post.objects.count(), 0)
         
         
+class PostRetrieveRequestTests(APITestCase):
+    """
+    Testing request for retrieving lists of posts, including
+    pseudo-subreddits
+    """
+    def setUp(self):
+        # need a subreddit
+        self.subreddit = Sub.objects.create(
+            title='test_subreddit'
+        )
+
+        # and a user or two
+        self.user_data = {
+            'username': 'test_username',
+            'email': 'test@gmail.com',
+            'password': 'test_password',
+            }
+        self.user = User.objects.create(**self.user_data)
+        self.user_data_2 = {
+            'username': 'test_username_2',
+            'email': 'test2@gmail.com',
+            'password': 'test_password',
+            }
+        self.user2 = User.objects.create(**self.user_data_2)
+        
+        for post_num in range(10):
+            Post.objects.create(
+                poster=self.user,
+                subreddit=self.subreddit,
+                title="user_1_post_title_{}".format(post_num)
+            )
+        for post_num in range(10):
+            Post.objects.create(
+                poster=self.user2,
+                subreddit=self.subreddit,
+                title="user_2_post_title_{}".format(post_num)
+            )
+        
+        self.sub_post_list_url = reverse(
+            'sub-post-list',
+            kwargs={ "sub_title": self.subreddit.title}
+        )
+        self.sub_post_list_url_f = lambda title: reverse(
+            'sub-post-list',
+            kwargs={ "sub_title": title}
+        )
+
+    def test_real_subreddit_retrieval(self):
+        """
+        An unauthed user can retrive all of the posts from a particular
+        subreddit.
+        """
+        response = self.client.get(self.sub_post_list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "user_1_post_title_", count=10)
+        self.assertContains(response, "user_2_post_title_", count=10)
+        
+    def test_real_non_subreddit_retrieval(self):
+        """
+        A request for the posts of a subreddit that doesn't exist
+        raises a 404
+        """
+        response = self.client.get(self.sub_post_list_url_f("non_sub"))
+        self.assertContains(
+            response,
+            "The 'non_sub' subreddit does not exist",
+            count=1,
+            status_code=404
+        )
+        
+    def test_pseudo_all_subreddit_retrieval(self):
+        """
+        An unauthed request to the 'Home' psuedo subReddit returns
+        a list of all of the posts
+        """
+        response = self.client.get(self.sub_post_list_url_f("Home"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "user_1_post_title_", count=10)
+        self.assertContains(response, "user_2_post_title_", count=10)
+        
+    def test_auth_pseudo_all_subreddit_retrieval(self):
+        """
+        An authenticated request to the 'Home' psuedo subReddit returns
+        a list of all of the posts for the subreddits the use is subcribed to
+        """
+        self.client.force_login(self.user)
+        # create a new subreddit for this test
+        self.subreddit2 = Sub.objects.create(
+            title='test_subreddit_2'
+        )
+        # sign up for the subreddit
+        UserSubMembership.objects.create(
+            user=self.user,
+            sub=self.subreddit2
+        )
+        # make some posts in new subreddit
+        for post_num in range(10):
+            Post.objects.create(
+                poster=self.user,
+                subreddit=self.subreddit2,
+                title="these_are_in_sub2_{}".format(post_num)
+            )
+        response = self.client.get(self.sub_post_list_url_f("Home"))
+        self.assertContains(
+            response,
+            "these_are_in_sub2_",
+            count=10
+        )
+        self.assertNotContains(response, "user_1_post_title_")
+        self.assertNotContains(response, "user_2_post_title_")

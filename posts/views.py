@@ -6,7 +6,7 @@ from rest_framework.generics import (
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, exceptions
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -110,35 +110,67 @@ class SubPostListView(ListAPIView):
         return sort_functions.get(api_sort_key, sort_functions['popular'])
     
     def get_queryset(self):
+        """
+        Check if posts are requested from a psuedo-subreddit
+        or ensure that the requested subreddit exists.
+        Either way order the subreddit too.
+        NOTE: At this point can't sort with qs.order_by because
+        upvotes are not a column of the post table in db.
+        """
         order_by = self.request.query_params.get('orderby', 'popular')
         subreddit_title = self.kwargs.get('sub_title', None)
         
-        queryset = Post.objects.filter(
-            subreddit__title=subreddit_title
-        )
-        # can't use Queryset.order_by because upvotes isn't in the database
-        return sorted(queryset, key=self.get_sort_function())
-    
-    def get(self, request, *args, **kwargs):
-        """
-        Custom get method to filter out requests for the posts of
-        `home` and `popular` as well as to perform a check that
-        otherwise the requested subreddit exists.
-        """
-        subreddit_title = self.kwargs.get('sub_title', None)
-        if subreddit_title.lower() == 'popular':
-            return self.get_popular(request, *args, **kwargs)
-        elif subreddit_title.lower() == 'home':
-            return self.get_home(request, *args, **kwargs)
-        elif subreddit_title.lower() == 'all':
-            return self.get_all(request, *args, **kwargs)
+        if subreddit_title.lower() in Sub.pseudo_subreddits:
+            qs = getattr(
+                self,
+                "get_{}_queryset".format(subreddit_title.lower())
+            )()
         else:
+            # make sure the subreddit exists
             try:
-                Sub.objects.get(title=subreddit_title)
+                subreddit = Sub.objects.get(title=subreddit_title)
             except Sub.DoesNotExist:
-                return Response({'detail': "This subreddit does not exist"},
-                                status=status.HTTP_404_NOT_FOUND)
-            return self.list(request, *args, **kwargs)
+                message = _("The '{}' subreddit does not exist".format(
+                    subreddit_title
+                ))
+                raise exceptions.NotFound(message)
+            qs = subreddit.posts.all()
+        return sorted(qs, key=self.get_sort_function())
+        
+    def get_home_queryset(self):
+        """
+        Create a list of posts for a 'home' subreddit on the fly.
+        This will depend on whether the user is signed in or not.
+        If they are authenticated then only select posts from
+        thier subscribed subreddits. Otherwise just return a list
+        of all posts.
+        """
+        if self.request.user and self.request.user.is_authenticated:
+            return Post.objects.filter(
+                subreddit__in=self.request.user.subs.all()
+            )
+            
+        # return all posts if unauthed
+        return Post.objects.all()
+    
+
+    
+    # def get(self, request, *args, **kwargs):
+    #     """
+    #     Custom get method to filter out requests for the posts of
+    #     `home` and `popular` as well as to perform a check that
+    #     otherwise the requested subreddit exists.
+    #     """
+    #     subreddit_title = self.kwargs.get('sub_title', None)
+    #     if subreddit_title.lower() == 'popular':
+    #         return self.get_popular(request, *args, **kwargs)
+    #     elif subreddit_title.lower() == 'home':
+    #         return self.get_home(request, *args, **kwargs)
+    #     elif subreddit_title.lower() == 'all':
+    #         return self.get_all(request, *args, **kwargs)
+    #     else:
+    #
+    #         return self.list(request, *args, **kwargs)
             
     def get_home(self, request, *args, **kwargs):
         """
