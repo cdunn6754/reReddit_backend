@@ -261,7 +261,7 @@ class PostRequestTests(APITestCase):
 class PostRetrieveRequestTests(APITestCase):
     """
     Testing request for retrieving lists of posts, including
-    pseudo-subreddits
+    pseudo-subreddits and pagination
     """
     def setUp(self):
         # need a subreddit
@@ -328,7 +328,7 @@ class PostRetrieveRequestTests(APITestCase):
             status_code=404
         )
         
-    def test_pseudo_all_subreddit_retrieval(self):
+    def test_pseudo_home_subreddit_retrieval(self):
         """
         An unauthed request to the 'Home' psuedo subReddit returns
         a list of all of the posts
@@ -338,10 +338,10 @@ class PostRetrieveRequestTests(APITestCase):
         self.assertContains(response, "user_1_post_title_", count=10)
         self.assertContains(response, "user_2_post_title_", count=10)
         
-    def test_auth_pseudo_all_subreddit_retrieval(self):
+    def test_auth_pseudo_home_subreddit_retrieval(self):
         """
         An authenticated request to the 'Home' psuedo subReddit returns
-        a list of all of the posts for the subreddits the use is subcribed to
+        a list of all of the posts for the subreddits the user is subcribed to
         """
         self.client.force_login(self.user)
         # create a new subreddit for this test
@@ -422,4 +422,102 @@ class PostRetrieveRequestTests(APITestCase):
         self.assertContains(response, "user_2_post_title_", count=5)
         self.assertNotContains(response, "user_1_post_title_0")
         self.assertNotContains(response, "user_2_post_title_2")
+        
+    def test_pagination(self):
+        """
+        requests can specify limit and offset GET query parameters to
+        indicate pagination requirements
+        """
+        # make some more posts
+        for post_num in range(10):
+            Post.objects.create(
+                poster=self.user,
+                subreddit=self.subreddit,
+                title="pagination_user_1_post_title_{}".format(post_num)
+            )
+
+        pagination_parameters = {
+            'offset': 0,
+            'limit': 5
+        }
+        response = self.client.get(self.sub_post_list_url, pagination_parameters)
+        self.assertContains(response, "user_1_post_title_", count=5)
+        self.assertNotContains(response, "user_2_post_title_")
+        
+        pagination_parameters = {
+            'offset': 5,
+            'limit': 10
+        }
+        response = self.client.get(self.sub_post_list_url, pagination_parameters)
+        self.assertContains(response, "user_1_post_title_", count=5)
+        self.assertContains(response, "user_2_post_title_", count=5)
+        
+        pagination_parameters = {
+            'offset': 15,
+            'limit': 5
+        }
+        response = self.client.get(self.sub_post_list_url, pagination_parameters)
+        self.assertContains(response, "user_2_post_title_", count=5)
+        self.assertNotContains(response, "user_1_post_title_")
+
+    def test_pagination_next(self):
+        """
+        The pagination response contains a 'next' hyperlink that can
+        be followed to retrieve the next set.
+        """
+        pagination_parameters = {
+            'offset': 0,
+            'limit': 10
+        }
+        response = self.client.get(self.sub_post_list_url, pagination_parameters)
+        response = self.client.get(response.data["next"])
+        self.assertContains(response, "user_2_post_title_", count=10)
+        self.assertNotContains(response, "user_1_post_title_")
+        
+    def test_pagination_next_with_orderby(self):
+        """
+        The orderby query parameter should be preserved to the
+        'next' hyperlink of the pagination response. And the ordering
+        should still work.
+        """
+        # make half of the posts popular
+        evens = range(1,11,2)
+        for post in Post.objects.all():
+            if int(post.title[-1]) in evens:
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user,
+                    vote_type=1
+                )
+                PostVote.objects.create(
+                    post=post,
+                    user=self.user2,
+                    vote_type=1
+                )
+                        
+        pagination_parameters = {
+            'offset': 0,
+            'limit': 10
+        }
+        q_params = {
+            **pagination_parameters,
+            "orderby": "popular"
+        }
+        response = self.client.get(self.sub_post_list_url_f("Home"), q_params)
+        self.assertContains(response, "user_1_post_title_", count=5)
+        self.assertContains(response, "user_2_post_title_", count=5)
+        self.assertIn("orderby=popular", response.data["next"])
+        # make sure they were all the popular ones
+        popularity = []
+        for post in response.data["results"]:
+            popularity.append(post["upvotes"]==2)
+        self.assertTrue(all(popularity))
+        
+        # now make sure these are the unpopular ones
+        response = self.client.get(response.data["next"])
+        popularity = []
+        for post in response.data["results"]:
+            popularity.append(post["upvotes"]==0)
+        self.assertTrue(all(popularity))
+        
         

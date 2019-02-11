@@ -14,7 +14,7 @@ from django.db.models import Sum
 from .models import Post
 from .serializers import PostSerializer
 from .permissions import IsPosterOrModOrAdminOrReadOnly
-from .pagination import PostPagination
+from .pagination import PostListPagination
 from subs.models import Sub
 from redditors.models import User
 
@@ -93,9 +93,10 @@ class SubPostListView(ListAPIView):
     Posts can be ordered with optional GET parameter 'orderby'.
     By default they are ordered by most popular.
     
-    query parameter: orderby, username
+    query parameter: orderby
     """
     serializer_class = PostSerializer
+    pagination_class = PostListPagination
     
     def get_sort_function(self):
         """
