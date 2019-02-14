@@ -105,11 +105,11 @@ class SubPostListView(ListAPIView):
         model attributes nomenclature.
         """
         sort_functions = {
-            'popular': (lambda post: -post.upvotes),
+            'best': (lambda post: -post.upvotes),
             'new': (lambda post: (timezone.now() - post.created))
         }
-        api_sort_key = self.request.query_params.get('orderby', 'popular')
-        return sort_functions.get(api_sort_key, sort_functions['popular'])
+        api_sort_key = self.request.query_params.get('orderby', 'best')
+        return sort_functions.get(api_sort_key, sort_functions['best'])
     
     def get_queryset(self):
         """
@@ -119,7 +119,6 @@ class SubPostListView(ListAPIView):
         NOTE: At this point can't sort with qs.order_by because
         upvotes are not a column of the post table in db.
         """
-        order_by = self.request.query_params.get('orderby', 'popular')
         subreddit_title = self.kwargs.get('sub_title', None)
         
         if subreddit_title.lower() in Sub.pseudo_subreddits:

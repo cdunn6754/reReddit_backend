@@ -65,11 +65,11 @@ class PostCommentView(ListAPIView):
         model attributes nomenclature.
         """
         sort_functions = {
-            'popular': (lambda comment: -comment.upvotes),
+            'best': (lambda comment: -comment.upvotes),
             'new' : (lambda comment: (timezone.now() - comment.created)),
         }
-        api_sort_key = self.request.query_params.get('orderby', 'popular')
-        return sort_functions.get(api_sort_key, sort_functions['popular'])
+        api_sort_key = self.request.query_params.get('orderby', 'best')
+        return sort_functions.get(api_sort_key, sort_functions['best'])
     
     def get_queryset(self):
         """
