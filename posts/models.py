@@ -2,6 +2,7 @@ from django.db import models
 from django_bleach.models import BleachField
 from django.core.validators import MaxLengthValidator
 from django.utils.translation import gettext as _
+from django.utils import timezone
 
 from redditors.models import User
 from subs.models import Sub
@@ -18,7 +19,8 @@ class Post(models.Model):
     
     objects_no_votes = models.Manager()
     
-    created = models.DateTimeField(auto_now_add=True)
+    # set default so that management command can overwrite
+    created = models.DateTimeField(default=timezone.now)
     updated = models.DateTimeField(auto_now=True)
     
     title = BleachField(

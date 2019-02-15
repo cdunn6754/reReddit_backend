@@ -1,12 +1,14 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from django_bleach.models import BleachField
+from django.utils import timezone
 
 from redditors.models import User
 from posts.models import Post
 
 class Comment(MPTTModel):
-    created = models.DateTimeField(auto_now_add=True)
+    # set default so that management command can overwrite
+    created = models.DateTimeField(default=timezone.now)
     
     poster = models.ForeignKey(
         User,

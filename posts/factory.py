@@ -1,6 +1,7 @@
 import factory
 import random
 import faker
+from django.utils import timezone
 
 from posts.models import Post
 
@@ -30,3 +31,10 @@ class PostFactory(factory.django.DjangoModelFactory):
         nb_sentences=1,
         variable_nb_sentences=True
     )
+    created = factory.Faker(
+        'date_time_between',
+        start_date="-1y",
+        end_date="now",
+        tzinfo=timezone.utc
+    )
+    updated = created
