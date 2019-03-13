@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.db import transaction
+from django.db.utils import IntegrityError
 from rest_framework.test import APITestCase, APIRequestFactory
 from rest_framework import status
 from django.urls import reverse
@@ -11,7 +12,46 @@ from subs.models import Sub
 from posts.models import Post
 from comments.models import Comment
 
-# Create your tests here.
+class UserORMTests(TestCase):
+    """Tests of user creation within django, i.e. no client requests"""
+    def setUp(self):
+        self.user_data = {
+            "username": "testUsername",
+            'email': "test@gmail.com",
+            'password': "testPassword"
+        }
+        
+        self.user = User.objects.create(**self.user_data)
+    
+    def test_duplicate_username(self):
+        """throw error for duplicated username"""
+        user_data_2 = {
+            "username": "testUsername",
+            "email": "test2@gmail.com",
+            "password": "testPassword2"
+        }
+        
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self.user_2 = User.objects.create(**user_data_2)
+            
+        
+        self.assertEqual(User.objects.count(), 1)
+            
+    def test_duplicate_email(self):
+        """throw error for duplicated email"""
+        user_data_2 = {
+            "username": "testUsername2",
+            "email": "test@gmail.com",
+            "password": "testPassword2"
+        }
+        
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self.user_2 = User.objects.create(**user_data_2)
+        
+        self.assertEqual(User.objects.count(), 1)
+            
 
 class UserProfileTest(APITestCase):
     """
@@ -111,6 +151,7 @@ class UserProfileTest(APITestCase):
             {"username": "dummy_username"}
         )
         self.assertEqual(response.status_code, 403)
+
         
 class SeedUsersCommandTests(TestCase):
     
