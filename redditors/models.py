@@ -12,6 +12,7 @@ class User(AbstractUser):
         related_name='members',
         
     )
+    email = models.EmailField(unique=True)
     #ManyToManyField on Subreddit, related_name="moderated_subs"
     #ManyToManyField for votes on Comment, related_name="voted_comments"
     #ManyToManyField for votes on Post, related_name="voted_posts"
