@@ -141,7 +141,8 @@ class CommentViewTests(APITestCase):
     def test_child_comment_creation(self):
         """
         A child comment can be created through the list view with a
-        comment fullname parameter
+        comment fullname parameter. The child comment will also
+        share the post with the parent, that is a nested serializer
         """
         # first create the parent comment via client
         data = {
@@ -158,12 +159,12 @@ class CommentViewTests(APITestCase):
             "body": self.comment_body
         }
         response = self.client.post(self.comment_list_url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertContains(response, self.post.title, status_code=201)
         self.assertEqual(Comment.objects.count(), 2)
         self.assertEqual(response.data["body"], self.comment_body)
         self.assertEqual(response.data["parent"], root_comment.pk)
-        self.assertContains(response, self.post.title, status_code=201)
         self.assertFalse(response.data["deleted"])
+        self.assertEqual(response.data["post"]["pk"], self.post.pk)
         
         self.assertIn(
             Comment.objects.get(pk=int(response.data["pk"])),
