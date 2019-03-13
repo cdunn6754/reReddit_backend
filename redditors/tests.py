@@ -14,13 +14,18 @@ from posts.models import Post
 
 class UserProfileTest(APITestCase):
     """
-    Can get a use profile.
+    Can get a user profile.
     """
     def setUp(self):
         self.user_data = {
             "username": "testUsername",
             'email': "test@gmail.com",
             'password': "testPassword"
+        }
+        self.user_data_2 = {
+            "username": "testUsername2",
+            'email': "test2@gmail.com",
+            'password': "testPassword2"
         }
         self.user = User.objects.create(**self.user_data)
         self.subreddit = Sub.objects.create(title="test subreddit")
@@ -37,6 +42,10 @@ class UserProfileTest(APITestCase):
             kwargs={'username': self.user_data["username"]})
         
     def test_get_user_profile(self):
+        """
+        A request to the user profile view returns the expected information
+        and it doesn't contain information about the other user
+        """
         response = self.client.get(self.user_profile_url)
         self.assertContains(response, self.user_data["username"])
         self.assertContains(response, self.post_data["body"])
@@ -45,6 +54,17 @@ class UserProfileTest(APITestCase):
         self.assertContains(response, "cake_day")
         self.assertContains(response, "karma")
         
+        self.assertNotContains(response, self.user_data_2["username"])
+        self.assertNotContains(response, self.user_data_2["email"])
+        self.assertNotContains(response, self.user_data_2["password"])
+    
+    def test_user_profile_name_error(self):
+        """When given a non-existant username, returns a reasonable error"""
+        response = self.client.get(reverse(
+            'user-profile',
+            kwargs={'username': 'not_a_name'}
+        ))
+        self.assertContains(response, "Not found", status_code=404)
         
         
         
