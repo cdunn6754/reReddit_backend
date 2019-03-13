@@ -112,5 +112,12 @@ class UserProfileTest(APITestCase):
         )
         self.assertEqual(response.status_code, 403)
         
-        
-        
+class SeedUsersCommandTests(TestCase):
+    
+    def test_create_users(self):
+        """Can create useres with the command"""
+        out = StringIO()
+        call_command('seed_users', number=10, stdout=out)
+        expected_out = "Creating 10 new users"
+        self.assertIn(expected_out, out.getvalue())
+        self.assertEqual(User.objects.count(), 10)
