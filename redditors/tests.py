@@ -9,6 +9,7 @@ from io import StringIO
 from redditors.models import User, UserSubMembership
 from subs.models import Sub
 from posts.models import Post
+from comments.models import Comment
 
 # Create your tests here.
 
@@ -36,7 +37,21 @@ class UserProfileTest(APITestCase):
             "title": "test post title",
             "body": "test post body"
         }
-        Post.objects.create(**self.post_data)
+        self.post = Post.objects.create(**self.post_data)
+        self.comment_data = {
+            "poster": self.user,
+            "post": self.post,
+            "body":"test comment 1"
+        }
+        self.comment = Comment.objects.create(**self.comment_data)
+        self.comment_data_2 = {
+            "poster": self.user,
+            "post": self.post,
+            "parent": self.comment,
+            "body": "test comment 2"
+        }
+        self.comment_2 = Comment.objects.create(**self.comment_data_2)
+        
         self.user_profile_url = reverse(
             'user-profile',
             kwargs={'username': self.user_data["username"]})
@@ -57,14 +72,45 @@ class UserProfileTest(APITestCase):
         self.assertNotContains(response, self.user_data_2["username"])
         self.assertNotContains(response, self.user_data_2["email"])
         self.assertNotContains(response, self.user_data_2["password"])
+        
+    def test_nested_comments(self):
+        """
+            The profile information should include nested comments by this user.
+            and those comments contain nested post information
+        """
+        response = self.client.get(self.user_profile_url)
+        self.assertContains(response, self.comment_data["body"])
+        self.assertContains(response, self.comment_data_2["body"])
+        res_comment_data = response.data["comments"]
+        
+        comment_1_data = next(
+            c for c in res_comment_data if c["pk"] == self.comment.pk
+        )
+        comment_2_data = next(
+            c for c in res_comment_data if c["pk"] == self.comment_2.pk
+        )
+        
+        self.assertEqual(comment_1_data["post"]["pk"], self.post.pk)
+        self.assertEqual(comment_2_data["post"]["pk"], self.post.pk)
+        self.assertEqual(comment_1_data["post"]["poster"], self.user.pk)
+        self.assertEqual(comment_2_data["post"]["poster"], self.user.pk)
+
     
     def test_user_profile_name_error(self):
-        """When given a non-existant username, returns a reasonable error"""
+        """When given a non-existant username, returns a 404"""
         response = self.client.get(reverse(
             'user-profile',
             kwargs={'username': 'not_a_name'}
         ))
         self.assertContains(response, "Not found", status_code=404)
+        
+    def test_profile_post_not_allowed(self):
+        """This endpoint is read only, no posts, results in 403"""
+        response = self.client.post(
+            self.user_profile_url,
+            {"username": "dummy_username"}
+        )
+        self.assertEqual(response.status_code, 403)
         
         
         
